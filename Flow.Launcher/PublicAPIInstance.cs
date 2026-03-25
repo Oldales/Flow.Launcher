@@ -147,6 +147,15 @@ namespace Flow.Launcher
             });
         }
 
+        public void OpenPluginSettingsWindow(string pluginId)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var window = new PluginSettingsWindow(pluginId);
+                window.Show();
+            });
+        }
+
         public void ShellRun(string cmd, string filename = "cmd.exe")
         {
             var args = filename == "cmd.exe" ? $"/C {cmd}" : $"{cmd}";
