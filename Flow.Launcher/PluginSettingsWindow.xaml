@@ -3,10 +3,10 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
-    Width="920"
-    Height="320"
-    MinWidth="720"
-    MinHeight="230"
+    Width="800"
+    Height="Auto"
+    MinWidth="600"
+    MinHeight="300"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
     Loaded="OnLoaded"
@@ -47,9 +47,8 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
-        <Border Style="{StaticResource WindowMainPanelStyle}">
-            <Grid Background="{DynamicResource Color01B}">
+    <Border Style="{StaticResource WindowMainPanelStyle}">
+        <Grid Background="{DynamicResource Color01B}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -171,23 +170,18 @@
                     </Path>
                 </Button>
 
-                <Border
+                <ScrollViewer
                     Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="5"
-                    Margin="20 8 20 16">
-                    <ScrollViewer
-                        FontSize="14"
-                        HorizontalScrollBarVisibility="Disabled"
-                        VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="8 0 32 0">
+                    FontSize="14"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="32 8 32 16">
                             <!--  Plugin header  -->
-                            <Border
-                                Margin="0"
-                                Padding="0 12">
-                                <Grid Margin="16 12 18 12">
+                            <Grid Margin="16 16 18 24">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="36" MinWidth="36" />
+                                        <ColumnDefinition Width="36" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Image
@@ -214,23 +208,19 @@
                                             Text="{Binding PluginPair.Metadata.Description}"
                                             TextWrapping="WrapWithOverflow" />
                                     </StackPanel>
-                                </Grid>
-                            </Border>
+                            </Grid>
 
-                            <Border
-                                Margin="0"
-                                Padding="0"
-                                CornerRadius="5 5 0 0">
-                                <Border.Style>
-                                    <Style BasedOn="{StaticResource SettingGroupBox}" TargetType="Border">
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="Padding" Value="0" />
-                                        <Setter Property="Margin" Value="0" />
-                                    </Style>
-                                </Border.Style>
+                            <Border 
+                                Margin="0" 
+                                Padding="0" 
+                                CornerRadius="5 5 0 0"
+                                BorderThickness="0"
+                                Style="{StaticResource SettingGroupBox}">
                                 <StackPanel>
                                     <!--  Enabled row  -->
-                                    <Border Style="{StaticResource PluginSettingsRowBorderStyle}">
+                                    <Border
+                                        BorderThickness="0"
+                                        Style="{StaticResource PluginSettingsRowBorderStyle}">
                                         <DockPanel Margin="{StaticResource SettingPanelMargin}" LastChildFill="False">
                                             <TextBlock Style="{StaticResource PluginSettingsRowGlyphStyle}">
                                                 &#xe7e8;
@@ -317,7 +307,6 @@
                                                 Text="{DynamicResource searchDelay}" />
                                             <ui:NumberBox
                                                 Width="120"
-                                                MinWidth="120"
                                                 Margin="0 -4.5 0 -4.5"
                                                 HorizontalAlignment="Right"
                                                 IsEnabled="{Binding SearchDelayEnabled}"
@@ -373,10 +362,8 @@
                                                         
                             <!-- Plugin Footer -->
                             <ContentControl Content="{Binding BottomPart2}" />
-                        </StackPanel>
-                    </ScrollViewer>
-                </Border>
-            </Grid>
-        </Border>
-    </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+        </Grid>
+    </Border>
 </Window>
