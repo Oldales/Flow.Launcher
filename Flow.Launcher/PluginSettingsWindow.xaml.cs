@@ -1,24 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Flow.Launcher.Core.Plugin;
 using Flow.Launcher.Infrastructure.UserSettings;
 using Flow.Launcher.ViewModel;
+using iNKORE.UI.WPF.Modern.Controls;
 
 namespace Flow.Launcher;
 
 public partial class PluginSettingsWindow
 {
     private readonly Settings _settings;
-    private readonly PluginDisplayModes _displayModes = new();
 
     public PluginSettingsWindow()
     {
         _settings = Ioc.Default.GetRequiredService<Settings>();
         InitializeComponent();
-        PluginListBox.DataContext = _displayModes;
     }
 
     public PluginSettingsWindow(string pluginId)
@@ -56,9 +54,17 @@ public partial class PluginSettingsWindow
             IsExpanded = true,
         };
 
-        PluginListBox.ItemsSource = new List<PluginViewModel> { pluginViewModel };
-        PluginListBox.SelectedIndex = -1;
+        DataContext = pluginViewModel;
         Title = $"{pluginPair.Metadata.Name} Settings";
+    }
+
+    // This is used for Priority control to force its value to be 0 when the user clears the value.
+    private void NumberBox_OnValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+    {
+        if (double.IsNaN(args.NewValue))
+        {
+            sender.Value = 0;
+        }
     }
 
     private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
@@ -118,13 +124,5 @@ public partial class PluginSettingsWindow
         }
 
         base.OnClosed(e);
-    }
-
-    private sealed class PluginDisplayModes
-    {
-        public bool IsOnOffSelected => true;
-        public bool IsPrioritySelected => false;
-        public bool IsSearchDelaySelected => false;
-        public bool IsHomeOnOffSelected => false;
     }
 }
