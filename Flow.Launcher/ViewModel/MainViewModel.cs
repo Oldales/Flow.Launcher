@@ -1832,8 +1832,7 @@ namespace Flow.Launcher.ViewModel
         {
             var id = result.PluginID;
 
-            var settings = Localize.iconTraySettings();  // Todo: replace with dedicated translation
-            var title = $"{settings}";
+            var title = Localize.contextMenuPluginSettingsTitle();
 
             var menu = new Result
             {

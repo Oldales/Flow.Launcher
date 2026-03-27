@@ -46,6 +46,7 @@
     <system:String x:Key="invalidFlowLauncherPluginFileFormat">Invalid Flow Launcher plugin file format</system:String>
     <system:String x:Key="setAsTopMostInThisQuery">Set as topmost in this query</system:String>
     <system:String x:Key="cancelTopMostInThisQuery">Cancel topmost in this query</system:String>
+    <system:String x:Key="contextMenuPluginSettingsTitle">Plugin Settings</system:String>
     <system:String x:Key="executeQuery">Execute query: {0}</system:String>
     <system:String x:Key="lastExecuteTime">Last execution time: {0}</system:String>
     <system:String x:Key="iconTrayOpen">Open</system:String>
@@ -483,6 +484,9 @@
     <system:String x:Key="LogLevelINFO">Info</system:String>
     <system:String x:Key="LogLevelDEBUG">Debug</system:String>
     <system:String x:Key="settingWindowFontTitle">Setting Window Font</system:String>
+
+    <!--  Plugin Settings Window  -->
+    <system:String x:Key="pluginSettingsWindowTitle">Settings: {0}</system:String>
 
     <!--  Release Notes Window  -->
     <system:String x:Key="seeMoreReleaseNotes">See more release notes on GitHub</system:String>

@@ -45,8 +45,7 @@ public partial class PluginSettingsWindow
         };
 
         DataContext = pluginViewModel;
-        Title = $"{pluginPair.Metadata.Name} Settings";
-
+        Title = Localize.pluginSettingsWindowTitle(pluginPair.Metadata.Name);
         InitializeComponent();
     }
 
