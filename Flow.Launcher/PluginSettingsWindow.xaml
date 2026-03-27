@@ -249,7 +249,9 @@
 
                                     <!--  Home row  -->
                                     <Border Style="{StaticResource PluginSettingsRowBorderStyle}">
-                                        <DockPanel Margin="{StaticResource SettingPanelMargin}" LastChildFill="False">
+                                        <DockPanel
+                                            Margin="{StaticResource SettingPanelMargin}"
+                                            LastChildFill="False">
                                             <TextBlock Style="{StaticResource PluginSettingsRowGlyphStyle}">
                                                 &#xE80F;
                                             </TextBlock>
@@ -263,20 +265,33 @@
                                                 IsOn="{Binding PluginHomeState}"
                                                 OffContent="{DynamicResource disable}"
                                                 OnContent="{DynamicResource enable}"
-                                                ToolTip="{DynamicResource homeToggleBoxToolTip}" />
+                                                ToolTip="{DynamicResource homeToggleBoxToolTip}"
+                                                ToolTipService.ShowOnDisabled="True">
+                                                <ui:ToggleSwitch.Style>
+                                                    <Style
+                                                        BasedOn="{StaticResource {x:Type ui:ToggleSwitch}}"
+                                                        TargetType="ui:ToggleSwitch">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="ToolTipService.InitialShowDelay" Value="0" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ui:ToggleSwitch.Style>
+                                            </ui:ToggleSwitch>
                                         </DockPanel>
                                     </Border>
 
                                     <!--  Priority row  -->
                                     <Border Style="{StaticResource PluginSettingsRowBorderStyle}">
-                                        <DockPanel Margin="{StaticResource SettingPanelMargin}">
+                                        <DockPanel
+                                            Margin="{StaticResource SettingPanelMargin}">
                                             <TextBlock Style="{StaticResource PluginSettingsRowGlyphStyle}">
                                                 &#xE74A;
                                             </TextBlock>
                                             <TextBlock
                                                 Style="{StaticResource PluginSettingsRowLabelStyle}"
-                                                Text="{DynamicResource priority}"
-                                                ToolTip="{DynamicResource priorityToolTip}" />
+                                                Text="{DynamicResource priority}" />
                                             <ui:NumberBox
                                                 MinWidth="120"
                                                 Margin="0 -4.5 0 -4.5"
@@ -292,14 +307,14 @@
 
                                     <!--  Search Delay row  -->
                                     <Border Style="{StaticResource PluginSettingsRowBorderStyle}">
-                                        <DockPanel Margin="{StaticResource SettingPanelMargin}">
+                                        <DockPanel
+                                            Margin="{StaticResource SettingPanelMargin}">
                                             <TextBlock Style="{StaticResource PluginSettingsRowGlyphStyle}">
                                                 &#xE961;
                                             </TextBlock>
                                             <TextBlock
                                                 Style="{StaticResource PluginSettingsRowLabelStyle}"
-                                                Text="{DynamicResource searchDelay}"
-                                                ToolTip="{DynamicResource searchDelayToolTip}" />
+                                                Text="{DynamicResource searchDelay}" />
                                             <ui:NumberBox
                                                 Width="120"
                                                 MinWidth="120"
@@ -312,9 +327,20 @@
                                                 SmallChange="10"
                                                 SpinButtonPlacementMode="Compact"
                                                 ToolTip="{DynamicResource searchDelayNumberBoxToolTip}"
-                                                ToolTipService.InitialShowDelay="0"
                                                 ToolTipService.ShowOnDisabled="True"
-                                                Value="{Binding PluginSearchDelayTime, Mode=TwoWay}" />
+                                                Value="{Binding PluginSearchDelayTime, Mode=TwoWay}">
+                                                <ui:NumberBox.Style>
+                                                    <Style
+                                                        BasedOn="{StaticResource {x:Type ui:NumberBox}}"
+                                                        TargetType="ui:NumberBox">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="ToolTipService.InitialShowDelay" Value="0" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ui:NumberBox.Style>
+                                            </ui:NumberBox>
                                         </DockPanel>
                                     </Border>
                                 </StackPanel>
