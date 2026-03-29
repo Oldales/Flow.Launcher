@@ -13,20 +13,10 @@ public partial class PluginSettingsWindow
 {
     private readonly Settings _settings;
 
-    public PluginSettingsWindow()
+    public PluginSettingsWindow(string pluginId)
     {
         _settings = Ioc.Default.GetRequiredService<Settings>();
-        InitializeComponent();
-    }
 
-    public PluginSettingsWindow(string pluginId)
-        : this()
-    {
-        LoadPlugin(pluginId);
-    }
-
-    private void LoadPlugin(string pluginId)
-    {
         if (string.IsNullOrWhiteSpace(pluginId))
         {
             App.API.ShowMsgError("Plugin settings", "Invalid plugin id.");
@@ -56,6 +46,8 @@ public partial class PluginSettingsWindow
 
         DataContext = pluginViewModel;
         Title = $"{pluginPair.Metadata.Name} Settings";
+
+        InitializeComponent();
     }
 
     // This is used for Priority control to force its value to be 0 when the user clears the value.
