@@ -167,7 +167,8 @@ namespace Flow.Launcher.Plugin
         /// Open plugin setting window for a specific plugin
         /// </summary>
         /// <param name="pluginId">ID of the plugin whose settings window should be opened</param>
-        void OpenPluginSettingsWindow(string pluginId);
+        /// <returns>True if the plugin settings window was successfully opened; false otherwise</returns>
+        bool OpenPluginSettingsWindow(string pluginId);
 
         /// <summary>
         /// Get translation of current language

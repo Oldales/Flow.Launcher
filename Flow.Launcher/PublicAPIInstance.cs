@@ -147,12 +147,22 @@ namespace Flow.Launcher
             });
         }
 
-        public void OpenPluginSettingsWindow(string pluginId)
+        public bool OpenPluginSettingsWindow(string pluginId)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            return Application.Current.Dispatcher.Invoke(() =>
             {
-                var window = new PluginSettingsWindow(pluginId);
-                window.Show();
+                try
+                {
+                    var window = new PluginSettingsWindow(pluginId);
+                    window.Show();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    LogException(ClassName, $"Failed to open plugin settings window for plugin id '{pluginId}'", e);
+                    ShowMsgError(Localize.pluginSettingsWindowOpenFailed());
+                    return false;
+                }
             });
         }
 

@@ -1841,8 +1841,7 @@ namespace Flow.Launcher.ViewModel
                 PluginDirectory = Constant.ProgramDirectory,
                 Action = _ =>
                 {
-                    App.API.OpenPluginSettingsWindow(id);
-                    return true;
+                    return App.API.OpenPluginSettingsWindow(id);
                 },
                 OriginQuery = result.OriginQuery
             };

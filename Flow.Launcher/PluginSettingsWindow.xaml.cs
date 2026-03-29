@@ -17,24 +17,20 @@ public partial class PluginSettingsWindow
     {
         _settings = Ioc.Default.GetRequiredService<Settings>();
 
-        if (string.IsNullOrWhiteSpace(pluginId))
-        {
-            App.API.ShowMsgError("Plugin settings", "Invalid plugin id.");
-            return;
+        if (string.IsNullOrWhiteSpace(pluginId)){
+            throw new ArgumentException("Plugin ID cannot be null or whitespace.", nameof(pluginId));
         }
 
         var pluginPair = PluginManager.GetPluginForId(pluginId);
         if (pluginPair == null)
         {
-            App.API.ShowMsgError("Plugin settings", $"Unable to find plugin: {pluginId}");
-            return;
+            throw new InvalidOperationException($"Unable to find plugin: {pluginId}");
         }
 
         var pluginSettings = _settings.PluginSettings.GetPluginSettings(pluginId);
         if (pluginSettings == null)
         {
-            App.API.ShowMsgError("Plugin settings", $"Unable to load settings for plugin: {pluginPair.Metadata.Name}");
-            return;
+            throw new InvalidOperationException($"Unable to load settings for plugin: {pluginPair.Metadata.Name}");
         }
 
         var pluginViewModel = new PluginViewModel
