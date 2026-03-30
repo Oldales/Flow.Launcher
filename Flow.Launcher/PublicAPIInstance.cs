@@ -160,21 +160,7 @@ namespace Flow.Launcher
                         .FirstOrDefault(existing => existing.PluginId == pluginId)
                         ?? new PluginSettingsWindow(pluginId);
 
-                    if (window.WindowState == WindowState.Minimized)
-                    {
-                        window.WindowState = WindowState.Normal;
-                    }
-
-                    if (!window.IsVisible)
-                    {
-                        window.Show();
-                    }
-                    else
-                    {
-                        window.Activate();
-                    }
-
-                    window.Focus();
+                    WindowVisibilityHelper.ShowOrActivate(window);
                     return true;
                 }
                 catch (Exception e)
