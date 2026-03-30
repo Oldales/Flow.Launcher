@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -153,8 +154,27 @@ namespace Flow.Launcher
             {
                 try
                 {
-                    var window = new PluginSettingsWindow(pluginId);
-                    window.Show();
+                    // get existing settings window for this plugin, or else create a new one
+                    var window = Application.Current.Windows
+                        .OfType<PluginSettingsWindow>()
+                        .FirstOrDefault(existing => existing.PluginId == pluginId)
+                        ?? new PluginSettingsWindow(pluginId);
+
+                    if (window.WindowState == WindowState.Minimized)
+                    {
+                        window.WindowState = WindowState.Normal;
+                    }
+
+                    if (!window.IsVisible)
+                    {
+                        window.Show();
+                    }
+                    else
+                    {
+                        window.Activate();
+                    }
+
+                    window.Focus();
                     return true;
                 }
                 catch (Exception e)

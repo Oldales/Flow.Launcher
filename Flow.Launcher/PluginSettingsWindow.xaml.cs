@@ -13,6 +13,8 @@ public partial class PluginSettingsWindow
 {
     private readonly Settings _settings;
 
+    public string PluginId { get; }
+
     public PluginSettingsWindow(string pluginId)
     {
         _settings = Ioc.Default.GetRequiredService<Settings>();
@@ -20,6 +22,8 @@ public partial class PluginSettingsWindow
         if (string.IsNullOrWhiteSpace(pluginId)){
             throw new ArgumentException("Plugin ID cannot be null or whitespace.", nameof(pluginId));
         }
+
+        PluginId = pluginId;
 
         var pluginPair = PluginManager.GetPluginForId(pluginId);
         if (pluginPair == null)

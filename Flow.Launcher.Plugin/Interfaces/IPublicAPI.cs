@@ -164,10 +164,11 @@ namespace Flow.Launcher.Plugin
 
 
         /// <summary>
-        /// Open plugin setting window for a specific plugin
+        /// Open plugin setting window for a specific plugin.
+        /// Reuses the existing window when that plugin's settings window is already open.
         /// </summary>
         /// <param name="pluginId">ID of the plugin whose settings window should be opened</param>
-        /// <returns>True if the plugin settings window was successfully opened; false otherwise</returns>
+        /// <returns>True if the plugin settings window was successfully opened or reused; false otherwise</returns>
         bool OpenPluginSettingsWindow(string pluginId);
 
         /// <summary>
