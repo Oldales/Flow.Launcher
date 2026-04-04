@@ -1831,12 +1831,12 @@ namespace Flow.Launcher.ViewModel
         private static Result ContextMenuPluginSettings(Result result)
         {
             var id = result.PluginID;
-
-            var title = Localize.contextMenuPluginSettingsTitle();
+            var metadata = PluginManager.GetPluginForId(id).Metadata;
 
             var menu = new Result
             {
-                Title = title,
+                Title = Localize.pluginSettingsWindowTitle(metadata.Name),
+                IcoPath = Constant.SettingsIcon,
                 Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\uE713"),
                 PluginDirectory = Constant.ProgramDirectory,
                 Action = _ =>
