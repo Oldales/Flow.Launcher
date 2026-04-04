@@ -1275,6 +1275,7 @@ namespace Flow.Launcher.ViewModel
             {
                 List<Result> results = PluginManager.GetContextMenusForPlugin(selected);
                 results.Add(ContextMenuTopMost(selected));
+                results.Add(ContextMenuPluginSettings(selected));
                 results.Add(ContextMenuPluginInfo(selected));
 
                 if (!string.IsNullOrEmpty(query))
@@ -1824,6 +1825,26 @@ namespace Flow.Launcher.ViewModel
                 };
             }
 
+            return menu;
+        }
+
+        private static Result ContextMenuPluginSettings(Result result)
+        {
+            var id = result.PluginID;
+            var metadata = PluginManager.GetPluginForId(id).Metadata;
+
+            var menu = new Result
+            {
+                Title = Localize.pluginSettingsWindowTitle(metadata.Name),
+                IcoPath = Constant.SettingsIcon,
+                Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\uE713"),
+                PluginDirectory = Constant.ProgramDirectory,
+                Action = _ =>
+                {
+                    return App.API.OpenPluginSettingsWindow(id);
+                },
+                OriginQuery = result.OriginQuery
+            };
             return menu;
         }
 
