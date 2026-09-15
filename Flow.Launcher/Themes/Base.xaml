@@ -17,6 +17,15 @@
     <system:Double x:Key="GlowBlurRadius">40</system:Double>
     <!--  Staggered fade and grow when result rows appear  -->
     <system:Boolean x:Key="ResultAppearAnimation">False</system:Boolean>
+    <!--  Fade and slight grow of the whole panel when the launcher opens  -->
+    <system:Boolean x:Key="WindowOpenAnimation">False</system:Boolean>
+    <!--  Pill behind the active plugin's icon and the flash when a plugin activates (see MainWindow.xaml)  -->
+    <SolidColorBrush x:Key="PluginActivationPillBrush" Color="Transparent" />
+    <system:Double x:Key="PluginActivationPillWidth">0</system:Double>
+    <system:Double x:Key="PluginActivationPillHeight">0</system:Double>
+    <Thickness x:Key="PluginActivationPillMargin">0</Thickness>
+    <CornerRadius x:Key="PluginActivationPillRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="PluginActivationFlashBrush" Color="Transparent" />
     <Thickness x:Key="ItemMargin">0</Thickness>
     <Thickness x:Key="ResultMargin">0</Thickness>
     <!--  Further font customizations are dynamically loaded in Theme.cs  -->

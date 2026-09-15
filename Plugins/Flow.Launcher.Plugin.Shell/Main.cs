@@ -415,10 +415,11 @@ namespace Flow.Launcher.Plugin.Shell
 
         private static void OnWinRPressed()
         {
-            Context.API.ShowMainWindow();
-            // show the main window and set focus to the query box
+            // Called from the global keyboard hook: return straight away so other keystrokes are not held up
+            // while the window opens. Show the main window and set focus to the query box in the background.
             _ = Task.Run(async () =>
             {
+                Context.API.ShowMainWindow();
                 Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeywords[0]}{Plugin.Query.TermSeparator}");
 
                 // Win+R is a system-reserved shortcut, and though the plugin intercepts the keyboard event and

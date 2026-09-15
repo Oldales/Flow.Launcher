@@ -1190,6 +1190,41 @@ namespace Flow.Launcher
 
             clocksb.Begin(ClockPanel);
             iconsb.Begin(SearchIcon);
+
+            if (TryFindResource("WindowOpenAnimation") is true)
+            {
+                PlayWindowOpenAnimation();
+            }
+        }
+
+        /// <summary>
+        /// Fades the panel in and grows it slightly from the top when the launcher opens (Zen Nebula style).
+        /// Themes opt in with the WindowOpenAnimation resource.
+        /// </summary>
+        private void PlayWindowOpenAnimation()
+        {
+            var scale = new ScaleTransform(1, 1);
+            WindowBorder.RenderTransformOrigin = new Point(0.5, 0);
+            WindowBorder.RenderTransform = scale;
+
+            var fade = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+            var grow = new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(250))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            // Drop the transform afterwards so text and icons render untransformed
+            grow.Completed += (_, _) =>
+            {
+                if (WindowBorder.RenderTransform == scale)
+                    WindowBorder.RenderTransform = Transform.Identity;
+            };
+
+            WindowBorder.BeginAnimation(OpacityProperty, fade);
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
         }
 
         private void UpdateClockPanelVisibility()
