@@ -6,16 +6,17 @@
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
     xmlns:userSettings="clr-namespace:Flow.Launcher.Infrastructure.UserSettings;assembly=Flow.Launcher.Infrastructure">
     <CornerRadius x:Key="ItemRadius">0</CornerRadius>
+    <!--  Selected result glow (see ResultListBox.xaml): GlowStop1-6 darkest to brightest  -->
     <Color x:Key="GlowStop1">Transparent</Color>
     <Color x:Key="GlowStop2">Transparent</Color>
     <Color x:Key="GlowStop3">Transparent</Color>
     <Color x:Key="GlowStop4">Transparent</Color>
     <Color x:Key="GlowStop5">Transparent</Color>
     <Color x:Key="GlowStop6">Transparent</Color>
-    <Color x:Key="GlowStop7">Transparent</Color>
-    <Color x:Key="GlowStop8">Transparent</Color>
-    <Color x:Key="GlowStop9">Transparent</Color>
-    <Color x:Key="GlowStop10">Transparent</Color>
+    <system:Double x:Key="GlowOpacity">0.6</system:Double>
+    <system:Double x:Key="GlowBlurRadius">40</system:Double>
+    <!--  Staggered fade and grow when result rows appear  -->
+    <system:Boolean x:Key="ResultAppearAnimation">False</system:Boolean>
     <Thickness x:Key="ItemMargin">0</Thickness>
     <Thickness x:Key="ResultMargin">0</Thickness>
     <!--  Further font customizations are dynamically loaded in Theme.cs  -->
