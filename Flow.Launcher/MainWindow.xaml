@@ -213,9 +213,40 @@
             Modifiers="{Binding CycleHistoryDownHotkey, Converter={StaticResource StringToKeyBindingConverter}, ConverterParameter='modifiers'}" />
     </Window.InputBindings>
 
-    <Border MouseDown="OnMouseDown" Style="{DynamicResource WindowBorderStyle}">
+    <Border
+        x:Name="WindowBorder"
+        MouseDown="OnMouseDown"
+        Style="{DynamicResource WindowBorderStyle}">
         <StackPanel Orientation="Vertical">
             <Grid x:Name="QueryBoxArea">
+                <!--  Accent flash when an action keyword activates a plugin (Zen search mode); transparent unless the theme sets PluginActivationFlashBrush  -->
+                <Border
+                    Background="{DynamicResource PluginActivationFlashBrush}"
+                    IsHitTestVisible="False"
+                    Opacity="0">
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PluginIconSource}" Value="{x:Null}">
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                                    <LinearDoubleKeyFrame KeyTime="0:0:0.08" Value="1" />
+                                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
+                                                        <EasingDoubleKeyFrame.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut" />
+                                                        </EasingDoubleKeyFrame.EasingFunction>
+                                                    </EasingDoubleKeyFrame>
+                                                </DoubleAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
                 <Border MinHeight="30" Style="{DynamicResource QueryBoxBgStyle}">
                     <Grid>
                         <TextBox
@@ -314,6 +345,59 @@
                 </StackPanel>
                 <Border>
                     <Grid WindowChrome.IsHitTestVisibleInChrome="True">
+                        <!--  Pill behind the active plugin's icon (Zen search mode indicator); invisible unless the theme sets the PluginActivationPill* resources  -->
+                        <Border
+                            Width="{DynamicResource PluginActivationPillWidth}"
+                            Height="{DynamicResource PluginActivationPillHeight}"
+                            Margin="{DynamicResource PluginActivationPillMargin}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource PluginActivationPillBrush}"
+                            CornerRadius="{DynamicResource PluginActivationPillRadius}"
+                            IsHitTestVisible="False"
+                            RenderTransformOrigin="0.5 0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform />
+                            </Border.RenderTransform>
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PluginIconSource}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <DataTrigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation
+                                                            Storyboard.TargetProperty="Opacity"
+                                                            From="0"
+                                                            To="1"
+                                                            Duration="0:0:0.15" />
+                                                        <DoubleAnimation
+                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                            From="0.85"
+                                                            To="1"
+                                                            Duration="0:0:0.25">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <BackEase Amplitude="0.4" EasingMode="EaseOut" />
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                        <DoubleAnimation
+                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                            From="0.85"
+                                                            To="1"
+                                                            Duration="0:0:0.25">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <BackEase Amplitude="0.4" EasingMode="EaseOut" />
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
                         <Image
                             x:Name="PluginActivationIcon"
                             HorizontalAlignment="Right"

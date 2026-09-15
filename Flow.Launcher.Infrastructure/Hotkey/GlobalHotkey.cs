@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Flow.Launcher.Plugin;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -16,22 +17,40 @@ namespace Flow.Launcher.Infrastructure.Hotkey
     public unsafe class GlobalHotkey : IDisposable
     {
         private static readonly HOOKPROC _procKeyboard = HookKeyboardCallback;
-        private static readonly UnhookWindowsHookExSafeHandle hookId;
+        private static UnhookWindowsHookExSafeHandle hookId;
 
         public delegate bool KeyboardCallback(KeyEvent keyEvent, int vkCode, SpecialKeyState state);
         internal static Func<KeyEvent, int, SpecialKeyState, bool> hookedKeyboardCallback;
 
         static GlobalHotkey()
         {
-            // Set the hook
-            hookId = SetHook(_procKeyboard, WINDOWS_HOOK_ID.WH_KEYBOARD_LL);
-        }
+            // A low-level hook is called on the thread that installed it, for every key pressed in any app.
+            // Installing it on its own thread with a message loop keeps those keystrokes from waiting
+            // whenever the UI thread is busy.
+            // The thread must only use locals: touching this class's statics from another thread while the
+            // static constructor is still running would wait for it to finish, and it is waiting for the thread.
+            var proc = _procKeyboard;
+            UnhookWindowsHookExSafeHandle installedHook = null;
+            using var hookInstalled = new ManualResetEventSlim();
+            var hookThread = new Thread(() =>
+            {
+                installedHook = HookInstaller.Install(proc, WINDOWS_HOOK_ID.WH_KEYBOARD_LL);
+                hookInstalled.Set();
 
-        private static UnhookWindowsHookExSafeHandle SetHook(HOOKPROC proc, WINDOWS_HOOK_ID hookId)
-        {
-            using var curProcess = Process.GetCurrentProcess();
-            using var curModule = curProcess.MainModule;
-            return PInvoke.SetWindowsHookEx(hookId, proc, PInvoke.GetModuleHandle(curModule.ModuleName), 0);
+                while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0).Value > 0)
+                {
+                    PInvoke.TranslateMessage(msg);
+                    PInvoke.DispatchMessage(msg);
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "Flow Launcher keyboard hook",
+                Priority = ThreadPriority.AboveNormal
+            };
+            hookThread.Start();
+            hookInstalled.Wait();
+            hookId = installedHook;
         }
 
         public static SpecialKeyState CheckModifiers()
@@ -94,6 +113,20 @@ namespace Flow.Launcher.Infrastructure.Hotkey
         ~GlobalHotkey()
         {
             Dispose();
+        }
+
+        /// <summary>
+        /// Installs a hook for the calling thread. Kept outside <see cref="GlobalHotkey"/> so the hook thread
+        /// can call it while that class's static constructor is still waiting for the hook.
+        /// </summary>
+        private static class HookInstaller
+        {
+            public static UnhookWindowsHookExSafeHandle Install(HOOKPROC proc, WINDOWS_HOOK_ID hookType)
+            {
+                using var curProcess = Process.GetCurrentProcess();
+                using var curModule = curProcess.MainModule;
+                return PInvoke.SetWindowsHookEx(hookType, proc, PInvoke.GetModuleHandle(curModule.ModuleName), 0);
+            }
         }
     }
 }

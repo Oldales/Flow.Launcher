@@ -5,8 +5,9 @@
 -->
 <!--
     Modeled on the Zen Browser "Nebula" mod (floating URL bar):
-    frosted dark glass, 12px rounded rows, 10% white selection and a soft
-    accent glow behind the selected row.
+    frosted dark glass, 12px rounded rows, 10% white selection, a soft
+    accent glow behind the selected row, Zen-style shortcut chips, an accent
+    pill for the active plugin and a quick fade-in when the launcher opens.
 
     Accent: GlowStop6 is the accent at full strength (Zen workspace primary
     color rgb(125 181 136)); GlowStop1-5 are the same color mixed with black,
@@ -38,6 +39,19 @@
     <system:Double x:Key="GlowOpacity">0.7</system:Double>
     <system:Double x:Key="GlowBlurRadius">56</system:Double>
     <system:Boolean x:Key="ResultAppearAnimation">True</system:Boolean>
+    <system:Boolean x:Key="WindowOpenAnimation">True</system:Boolean>
+
+    <!--  Action keyword indicator: accent pill behind the plugin icon and a flash when it activates  -->
+    <SolidColorBrush x:Key="PluginActivationPillBrush" Color="#9993C19C" />
+    <system:Double x:Key="PluginActivationPillWidth">40</system:Double>
+    <system:Double x:Key="PluginActivationPillHeight">30</system:Double>
+    <Thickness x:Key="PluginActivationPillMargin">0 0 18 0</Thickness>
+    <CornerRadius x:Key="PluginActivationPillRadius">15</CornerRadius>
+    <RadialGradientBrush x:Key="PluginActivationFlashBrush" Center="0.95,0.5" GradientOrigin="0.95,0.5" RadiusX="0.45" RadiusY="1.6">
+        <GradientStop Offset="0" Color="#A67DB588" />
+        <GradientStop Offset="0.45" Color="#407DB588" />
+        <GradientStop Offset="1" Color="#007DB588" />
+    </RadialGradientBrush>
 
     <CornerRadius x:Key="ItemRadius">12</CornerRadius>
     <Thickness x:Key="ItemMargin">10 2 10 2</Thickness>
@@ -108,7 +122,7 @@
         x:Key="ItemTitleStyle"
         BasedOn="{StaticResource BaseItemTitleStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#E6E6E6" />
+        <Setter Property="Foreground" Value="#B3FFFFFF" />
     </Style>
 
     <Style
@@ -129,7 +143,7 @@
         x:Key="ItemSubTitleSelectedStyle"
         BasedOn="{StaticResource BaseItemSubTitleSelectedStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#B8B8B8" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
     </Style>
 
     <Style x:Key="HighlightStyle" />
@@ -138,7 +152,7 @@
         x:Key="ItemGlyph"
         BasedOn="{StaticResource BaseGlyphStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#BDBDBD" />
+        <Setter Property="Foreground" Value="#B3FFFFFF" />
     </Style>
 
     <Style x:Key="ItemGlyphSelectedStyle" TargetType="{x:Type TextBlock}">
@@ -151,29 +165,33 @@
     </Style>
 
     <Style x:Key="ItemHotkeyStyle" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="Foreground" Value="#8A8A8A" />
     </Style>
 
     <Style x:Key="ItemHotkeySelectedStyle" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Foreground" Value="#D6D6D6" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="#26382A" />
     </Style>
 
     <Style
         x:Key="ItemHotkeyBGStyle"
         BasedOn="{StaticResource BaseItemHotkeyBGStyle}"
         TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#0FFFFFFF" />
-        <Setter Property="CornerRadius" Value="7" />
+        <Setter Property="Background" Value="#0DFFFFFF" />
+        <Setter Property="BorderBrush" Value="#14FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
     </Style>
 
     <Style
         x:Key="ItemHotkeyBGSelectedStyle"
         BasedOn="{StaticResource BaseItemHotkeyBGSelectedStyle}"
         TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#1FFFFFFF" />
-        <Setter Property="CornerRadius" Value="7" />
+        <Setter Property="Background" Value="#E6FFFFFF" />
+        <Setter Property="BorderBrush" Value="#E6FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
     </Style>
 
     <!--  Scrollbar  -->
@@ -198,7 +216,35 @@
     <Style
         x:Key="ScrollBarStyle"
         BasedOn="{StaticResource BaseScrollBarStyle}"
-        TargetType="{x:Type ScrollBar}" />
+        TargetType="{x:Type ScrollBar}">
+        <Setter Property="Width" Value="4" />
+        <Setter Property="Margin" Value="0 0 3 0" />
+        <Setter Property="Opacity" Value="0" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                To="1"
+                                Duration="0:0:0.15" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                To="0"
+                                Duration="0:0:0.4" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
 
     <!--  Search icon and clock  -->
     <Style
@@ -216,6 +262,13 @@
         <Setter Property="Height" Value="32" />
         <Setter Property="Margin" Value="0 8 8 0" />
         <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <Style x:Key="PluginActivationIcon" TargetType="{x:Type Image}">
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Margin" Value="0 0 28 0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style

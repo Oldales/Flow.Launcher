@@ -99,11 +99,13 @@
                                 x:Name="Bullet"
                                 Grid.Column="0"
                                 Style="{DynamicResource BulletStyle}" />
+                            <!--  Layout rounding keeps the icon on whole pixels; centered in the column it otherwise lands on a half pixel and blurs  -->
                             <Border
                                 Grid.Column="1"
                                 Margin="9 0 0 0"
                                 BorderBrush="Transparent"
-                                BorderThickness="1">
+                                BorderThickness="1"
+                                UseLayoutRounding="True">
                                 <Grid>
                                     <Image
                                         x:Name="ImageIcon"
@@ -245,6 +247,8 @@
                                 Accent glow behind the selected row (Zen Nebula style): a gradient three rows
                                 wide, blurred, clipped to the row and scrolling sideways. Themes color it with
                                 GlowStop1-6 (darkest to brightest); all transparent by default.
+                                Fades and scrolling are driven from ResultListBox.xaml.cs so a row rebuilt while
+                                typing keeps its highlight instead of fading in again.
                             -->
                             <Grid
                                 x:Name="GlowHost"
@@ -277,6 +281,14 @@
                                     </Rectangle.Effect>
                                 </Rectangle>
                             </Grid>
+                            <!--  Selection highlight, faded in and out (see ResultListBox.xaml.cs)  -->
+                            <Border
+                                x:Name="SelectionBg"
+                                Background="{DynamicResource ItemSelectedBackgroundColor}"
+                                CornerRadius="{DynamicResource ItemRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0"
+                                SnapsToDevicePixels="True" />
                             <Border
                                 x:Name="Bd"
                                 Background="{TemplateBinding Background}"
@@ -292,71 +304,6 @@
                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </Border>
                         </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ItemSelectedBackgroundColor}" />
-                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ItemSelectedBackgroundColor}" />
-                            </Trigger>
-                            <!--
-                                The glow only animates while its row is selected and on screen, so a hidden
-                                launcher has no running animations. The shift keeps moving through the fade-out
-                                (By, from the current value) and then stops.
-                            -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsSelected" Value="True" />
-                                    <Condition Property="IsVisible" Value="True" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlowHost" Storyboard.TargetProperty="Visibility">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimation
-                                                Storyboard.TargetName="GlowHost"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="1"
-                                                Duration="0:0:0.5">
-                                                <DoubleAnimation.EasingFunction>
-                                                    <SineEase EasingMode="EaseInOut" />
-                                                </DoubleAnimation.EasingFunction>
-                                            </DoubleAnimation>
-                                            <DoubleAnimation
-                                                By="3"
-                                                IsCumulative="True"
-                                                RepeatBehavior="Forever"
-                                                Storyboard.TargetName="GlowShift"
-                                                Storyboard.TargetProperty="X"
-                                                Duration="0:0:4" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </MultiTrigger.EnterActions>
-                                <MultiTrigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation
-                                                Storyboard.TargetName="GlowHost"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="0"
-                                                Duration="0:0:0.5">
-                                                <DoubleAnimation.EasingFunction>
-                                                    <SineEase EasingMode="EaseInOut" />
-                                                </DoubleAnimation.EasingFunction>
-                                            </DoubleAnimation>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlowHost" Storyboard.TargetProperty="Visibility">
-                                                <DiscreteObjectKeyFrame KeyTime="0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimation
-                                                By="0.375"
-                                                Storyboard.TargetName="GlowShift"
-                                                Storyboard.TargetProperty="X"
-                                                Duration="0:0:0.5" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </MultiTrigger.ExitActions>
-                            </MultiTrigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Windows.ApplicationModel;
@@ -527,6 +528,55 @@ namespace Flow.Launcher.Plugin.Program.Programs
                    appNode?.Attributes["uap10:TrustLevel"]?.Value == "mediumIL";
         }
 
+        private static readonly Regex LogoTargetSizeRegex = new(@"(?:^|[._])targetsize-(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex LogoScaleRegex = new(@"(?:^|[._])scale-(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex LogoBaseSizeRegex = new(@"(\d+)x(\d+)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Picks the logo asset whose file-name qualifiers best fit a dark launcher at the desired size:
+        /// no high-contrast variants, unplated (transparent) artwork first, then the closest size, preferring
+        /// larger over smaller. Returns null when no file carries a size qualifier.
+        /// </summary>
+        public static string SelectLogoByQualifiers(IEnumerable<string> logos, string logoNamePrefix, int desiredSize)
+        {
+            var baseSizeMatch = LogoBaseSizeRegex.Match(logoNamePrefix); // e.g. Square44x44Logo
+            var baseSize = baseSizeMatch.Success ? int.Parse(baseSizeMatch.Groups[1].Value) : 0;
+
+            string best = null;
+            var bestScore = int.MaxValue;
+            foreach (var logo in logos)
+            {
+                var name = Path.GetFileNameWithoutExtension(logo);
+                var qualifiers = name.Length > logoNamePrefix.Length ? name[logoNamePrefix.Length..] : string.Empty;
+
+                int size;
+                if (LogoTargetSizeRegex.Match(qualifiers) is { Success: true } targetSize)
+                    size = int.Parse(targetSize.Groups[1].Value);
+                else if (baseSize > 0 && LogoScaleRegex.Match(qualifiers) is { Success: true } scale)
+                    size = baseSize * int.Parse(scale.Groups[1].Value) / 100;
+                else
+                    continue;
+
+                var variantRank =
+                    qualifiers.Contains("contrast-", StringComparison.OrdinalIgnoreCase) ? 100 :
+                    qualifiers.Contains("altform-lightunplated", StringComparison.OrdinalIgnoreCase) ||
+                    qualifiers.Contains("theme-light", StringComparison.OrdinalIgnoreCase) ? 2 :
+                    qualifiers.Contains("altform-unplated", StringComparison.OrdinalIgnoreCase) ||
+                    qualifiers.Contains("theme-dark", StringComparison.OrdinalIgnoreCase) ? 0 : 1;
+
+                // Scaling a larger image down is cheap in quality; scaling a smaller one up is not
+                var sizePenalty = size >= desiredSize ? (size - desiredSize) / 4 : (desiredSize - size) * 4;
+                var score = variantRank * 100 + sizePenalty;
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = logo;
+                }
+            }
+
+            return best;
+        }
+
         internal string LogoPathFromUri(string uri, (int, int) desiredSize)
         {
             // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
@@ -582,6 +632,14 @@ namespace Flow.Launcher.Plugin.Program.Programs
                     }
 
                     var logos = Directory.EnumerateFiles(logoDir, $"{logoNamePrefix}*{extension}");
+
+                    // Asset names carry their size and variant (e.g. Logo.targetsize-64_altform-unplated.png),
+                    // so choose from the names and only decode files when none are named that way
+                    var byQualifiers = SelectLogoByQualifiers(logos, logoNamePrefix, Math.Max(desiredSize.Item1, desiredSize.Item2));
+                    if (byQualifiers != null)
+                    {
+                        return byQualifiers;
+                    }
 
                     // Currently we don't care which one to choose
                     // Just ignore all qualifiers
