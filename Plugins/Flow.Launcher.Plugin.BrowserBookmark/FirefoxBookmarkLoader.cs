@@ -118,50 +118,72 @@ public abstract class FirefoxBookmarkLoaderBase : IBookmarkLoader
         return bookmarks;
     }
 
+    // Per favicons database: its last write time and the icon file found for each site, so a reload triggered by
+    // history changes can reuse icons without copying and scanning an unchanged database again
+    private static readonly ConcurrentDictionary<string, (DateTime WriteTime, Dictionary<string, string> Icons)> FaviconLookups =
+        new(StringComparer.OrdinalIgnoreCase);
+
     private void LoadFaviconsFromDb(string dbPath, List<Bookmark> bookmarks)
     {
-        FaviconHelper.LoadFaviconsFromDb(_faviconCacheDir, dbPath, (tempDbPath) =>
+        // Bookmarks on the same site share an icon, so each site is looked up once
+        var bookmarksBySite = bookmarks
+            .Select(bookmark => (Bookmark: bookmark, Site: Uri.TryCreate(bookmark.Url, UriKind.Absolute, out var uri) ? uri.Host : null))
+            .Where(entry => !string.IsNullOrEmpty(entry.Site))
+            .GroupBy(entry => entry.Site, entry => entry.Bookmark, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (bookmarksBySite.Count == 0)
+            return;
+
+        var writeTime = File.GetLastWriteTimeUtc(dbPath);
+        if (FaviconLookups.TryGetValue(dbPath, out var cached) && cached.WriteTime == writeTime &&
+            bookmarksBySite.All(site => cached.Icons.ContainsKey(site.Key)))
         {
-            // Since some bookmarks may have same favicon id, we need to record them to avoid duplicates
-            var savedPaths = new ConcurrentDictionary<string, bool>();
+            AssignFavicons(bookmarksBySite, cached.Icons);
+            return;
+        }
 
-            // Get favicons based on bookmarks concurrently
-            Parallel.ForEach(bookmarks, bookmark =>
+        FaviconHelper.LoadFaviconsFromDb(_faviconCacheDir, dbPath, tempDbPath =>
+        {
+            var icons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Use read-only connection to avoid locking issues
+            // Do not use pooling so that we do not need to clear pool: https://github.com/dotnet/efcore/issues/26580
+            using var connection = new SqliteConnection($"Data Source={tempDbPath};Mode=ReadOnly;Pooling=false");
+            connection.Open();
+
+            var iconIds = FindWidestIconPerSite(connection, bookmarksBySite.Select(site => site.Key));
+
+            // Read and convert only icons that are not cached on disk yet
+            var pending = new List<(string Site, string FaviconPath, byte[] Data)>();
+            using (var dataCommand = connection.CreateCommand())
             {
-                // Use read-only connection to avoid locking issues
-                // Do not use pooling so that we do not need to clear pool: https://github.com/dotnet/efcore/issues/26580
-                var connection = new SqliteConnection($"Data Source={tempDbPath};Mode=ReadOnly;Pooling=false");
-                connection.Open();
+                dataCommand.CommandText = "SELECT data FROM moz_icons WHERE id = @id";
+                var idParameter = dataCommand.Parameters.Add("@id", SqliteType.Integer);
 
+                foreach (var site in bookmarksBySite)
+                {
+                    icons[site.Key] = null;
+                    if (!iconIds.TryGetValue(site.Key, out var iconId))
+                        continue;
+
+                    var faviconPath = Path.Combine(_faviconCacheDir, $"firefox_{site.Key}_{iconId}.webp");
+                    if (File.Exists(faviconPath))
+                    {
+                        icons[site.Key] = faviconPath;
+                        continue;
+                    }
+
+                    idParameter.Value = iconId;
+                    if (dataCommand.ExecuteScalar() is byte[] { Length: > 0 } data)
+                        pending.Add((site.Key, faviconPath, data));
+                }
+            }
+
+            Parallel.ForEach(pending, icon =>
+            {
                 try
                 {
-                    if (!Uri.TryCreate(bookmark.Url, UriKind.Absolute, out Uri uri))
-                        return;
-
-                    var domain = uri.Host;
-
-                    // Query for latest Firefox version favicon structure
-                    using var cmd = connection.CreateCommand();
-                    cmd.CommandText = @"
-                        SELECT i.id, i.data
-                        FROM moz_icons i
-                        JOIN moz_icons_to_pages ip ON i.id = ip.icon_id
-                        JOIN moz_pages_w_icons p ON ip.page_id = p.id
-                        WHERE p.page_url LIKE @domain
-                        ORDER BY i.width DESC
-                        LIMIT 1";
-
-                    cmd.Parameters.AddWithValue("@domain", $"%{domain}%");
-
-                    using var reader = cmd.ExecuteReader();
-                    if (!reader.Read() || reader.IsDBNull(1))
-                        return;
-
-                    var iconId = reader.GetInt64(0).ToString();
-                    var imageData = (byte[])reader["data"];
-
-                    if (imageData is not { Length: > 0 })
-                        return;
+                    var imageData = icon.Data;
 
                     // Check if the image data is compressed (GZip)
                     if (imageData.Length > 2 && imageData[0] == 0x1f && imageData[1] == 0x8b)
@@ -176,30 +198,74 @@ public abstract class FirefoxBookmarkLoaderBase : IBookmarkLoader
                     // Convert the image data to WebP format
                     var webpData = FaviconHelper.TryConvertToWebp(imageData);
                     if (webpData != null)
-                    {
-                        var faviconPath = Path.Combine(_faviconCacheDir, $"firefox_{domain}_{iconId}.webp");
-
-                        if (savedPaths.TryAdd(faviconPath, true))
-                        {
-                            FaviconHelper.SaveBitmapData(webpData, faviconPath);
-                        }
-
-                        bookmark.FaviconPath = faviconPath;
-                    }
+                        FaviconHelper.SaveBitmapData(webpData, icon.FaviconPath);
                 }
                 catch (Exception ex)
                 {
-                    Main.Context.API.LogException(ClassName, $"Failed to extract Firefox favicon: {bookmark.Url}", ex);
-                }
-                finally
-                {
-                    // Cache connection and clear pool after all operations to avoid issue:
-                    // ObjectDisposedException: Safe handle has been closed.
-                    connection.Close();
-                    connection.Dispose();
+                    Main.Context.API.LogException(ClassName, $"Failed to extract Firefox favicon: {icon.FaviconPath}", ex);
                 }
             });
+
+            foreach (var (site, faviconPath, _) in pending)
+            {
+                if (File.Exists(faviconPath))
+                    icons[site] = faviconPath;
+            }
+
+            AssignFavicons(bookmarksBySite, icons);
+            FaviconLookups[dbPath] = (writeTime, icons);
         });
+    }
+
+    /// <summary>
+    /// Maps each site to the widest icon (vector icons count as widest) of a page whose URL contains the site, the same
+    /// match as a <c>LIKE '%site%'</c> query per bookmark, but reading the icon pages once for all sites.
+    /// </summary>
+    public static Dictionary<string, long> FindWidestIconPerSite(SqliteConnection connection, IEnumerable<string> sites)
+    {
+        var pages = new List<(string Url, long IconId, long Width)>();
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = """
+                SELECT p.page_url, i.id, i.width
+                FROM moz_icons i
+                JOIN moz_icons_to_pages ip ON i.id = ip.icon_id
+                JOIN moz_pages_w_icons p ON ip.page_id = p.id
+                """;
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                if (reader.IsDBNull(0))
+                    continue;
+                pages.Add((reader.GetString(0), reader.GetInt64(1), reader.IsDBNull(2) ? 0 : reader.GetInt64(2)));
+            }
+        }
+
+        var result = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var site in sites)
+        {
+            (long IconId, long Width)? widest = null;
+            foreach (var page in pages)
+            {
+                if (page.Url.Contains(site, StringComparison.OrdinalIgnoreCase) && (widest == null || page.Width > widest.Value.Width))
+                    widest = (page.IconId, page.Width);
+            }
+            if (widest != null)
+                result[site] = widest.Value.IconId;
+        }
+
+        return result;
+    }
+
+    private static void AssignFavicons(IEnumerable<IGrouping<string, Bookmark>> bookmarksBySite, IReadOnlyDictionary<string, string> icons)
+    {
+        foreach (var site in bookmarksBySite)
+        {
+            if (!icons.TryGetValue(site.Key, out var faviconPath) || faviconPath == null)
+                continue;
+            foreach (var bookmark in site)
+                bookmark.FaviconPath = faviconPath;
+        }
     }
 }
 

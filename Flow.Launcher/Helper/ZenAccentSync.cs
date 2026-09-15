@@ -7,20 +7,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Flow.Launcher.Core.Resource;
 using Flow.Launcher.Infrastructure;
 
 namespace Flow.Launcher.Helper;
 
 /// <summary>
-/// Uses the active Zen Browser workspace color as the accent (result glow, plugin pill and flash, selection and
-/// progress line) for themes that set the <c>ZenAccentSync</c> resource. Checked when the launcher opens; Zen's
-/// files are only read again after Zen has written them, so there is no watcher or timer.
+/// Follows Zen Browser for themes that ask for it: <c>ZenAccentSync</c> uses the active workspace color as the accent
+/// (result glow, plugin pill and flash, selection and progress line), and <c>ZenColorSchemeSync</c> uses Zen's own
+/// light/dark choice when Zen forces one. Checked when the launcher opens; Zen's files are only read again after
+/// Zen has written them, so there is no watcher or timer.
 /// </summary>
 public static class ZenAccentSync
 {
     private static readonly string ClassName = nameof(ZenAccentSync);
 
-    private const string ThemeFlagKey = "ZenAccentSync";
+    private const string AccentFlagKey = "ZenAccentSync";
+    private const string ColorSchemeFlagKey = "ZenColorSchemeSync";
     private const double MaxGlowLightness = 0.62;
 
     private static readonly string[] AccentKeys =
@@ -36,26 +40,40 @@ public static class ZenAccentSync
     private static readonly Regex ActiveWorkspaceRegex =
         new(@"user_pref\(""zen\.workspaces\.active"",\s*""([^""]+)""\)", RegexOptions.Compiled);
 
+    // Firefox toolbar theme: 0 = dark, 1 = light, 2 (or unset) = follow the system
+    private static readonly Regex ToolbarThemeRegex =
+        new(@"user_pref\(""browser\.theme\.toolbar-theme"",\s*(\d+)\)", RegexOptions.Compiled);
+
     private static readonly SemaphoreSlim RefreshLock = new(1, 1);
     private static DateTime _prefsWriteTime;
     private static DateTime _sessionsWriteTime;
+    private static bool _lastSyncAccent;
+    private static bool _lastSyncColorScheme;
     private static Color? _appliedAccent;
+    private static string _appliedColorScheme;
 
     /// <summary>
     /// Call on the UI thread when the launcher is shown.
     /// </summary>
     public static void Refresh()
     {
-        if (Application.Current?.TryFindResource(ThemeFlagKey) is not true)
-        {
-            ClearAccent();
+        var app = Application.Current;
+        if (app == null)
             return;
-        }
 
-        _ = Task.Run(RefreshInBackgroundAsync);
+        var syncAccent = app.TryFindResource(AccentFlagKey) is true;
+        var syncColorScheme = app.TryFindResource(ColorSchemeFlagKey) is true;
+        if (!syncAccent)
+            ClearAccent();
+        if (!syncColorScheme)
+            ApplyColorScheme(null);
+        if (!syncAccent && !syncColorScheme)
+            return;
+
+        _ = Task.Run(() => RefreshInBackgroundAsync(syncAccent, syncColorScheme));
     }
 
-    private static async Task RefreshInBackgroundAsync()
+    private static async Task RefreshInBackgroundAsync(bool syncAccent, bool syncColorScheme)
     {
         if (!await RefreshLock.WaitAsync(0))
             return;
@@ -68,31 +86,74 @@ public static class ZenAccentSync
 
             var prefsPath = Path.Combine(profile, "prefs.js");
             var sessionsPath = Path.Combine(profile, "zen-sessions.jsonlz4");
-            if (!File.Exists(prefsPath) || !File.Exists(sessionsPath))
+            if (!File.Exists(prefsPath))
                 return;
 
             var prefsWriteTime = File.GetLastWriteTimeUtc(prefsPath);
-            var sessionsWriteTime = File.GetLastWriteTimeUtc(sessionsPath);
-            if (prefsWriteTime == _prefsWriteTime && sessionsWriteTime == _sessionsWriteTime)
+            var sessionsWriteTime = File.Exists(sessionsPath) ? File.GetLastWriteTimeUtc(sessionsPath) : default;
+            if (prefsWriteTime == _prefsWriteTime && sessionsWriteTime == _sessionsWriteTime &&
+                syncAccent == _lastSyncAccent && syncColorScheme == _lastSyncColorScheme)
                 return;
 
-            var accent = ReadActiveWorkspaceColor(prefsPath, sessionsPath);
+            var prefs = ReadSharedText(prefsPath);
+            var accent = syncAccent && sessionsWriteTime != default ? ReadActiveWorkspaceColor(prefs, sessionsPath) : null;
+            var colorScheme = syncColorScheme ? ReadColorScheme(prefs) : null;
+
             _prefsWriteTime = prefsWriteTime;
             _sessionsWriteTime = sessionsWriteTime;
+            _lastSyncAccent = syncAccent;
+            _lastSyncColorScheme = syncColorScheme;
 
-            if (accent is { } color && color != _appliedAccent)
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                await Application.Current.Dispatcher.InvokeAsync(() => ApplyAccent(color));
-            }
+                if (accent is { } color && color != _appliedAccent)
+                    ApplyAccent(color);
+                if (syncColorScheme)
+                    ApplyColorScheme(colorScheme);
+            });
         }
         catch (Exception e)
         {
-            App.API.LogException(ClassName, "Failed to read the Zen Browser workspace color", e);
+            App.API.LogException(ClassName, "Failed to read Zen Browser settings", e);
         }
         finally
         {
             RefreshLock.Release();
         }
+    }
+
+    // Zen keeps its files open for writing; share access so reading never blocks it
+    private static string ReadSharedText(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    private static string ReadColorScheme(string prefs)
+    {
+        var match = ToolbarThemeRegex.Match(prefs);
+        return !match.Success ? null : match.Groups[1].Value switch
+        {
+            "0" => "Dark",
+            "1" => "Light",
+            _ => null
+        };
+    }
+
+    private static void ApplyColorScheme(string colorScheme)
+    {
+        if (colorScheme == _appliedColorScheme)
+            return;
+
+        var resources = Application.Current.Resources;
+        if (colorScheme == null)
+            resources.Remove(Theme.ColorSchemeOverrideKey);
+        else
+            resources[Theme.ColorSchemeOverrideKey] = colorScheme;
+        _appliedColorScheme = colorScheme;
+
+        _ = Ioc.Default.GetRequiredService<Theme>().RefreshFrameAsync();
     }
 
     private static string FindZenProfileDirectory()
@@ -150,14 +211,8 @@ public static class ZenAccentSync
         return profile != null && Directory.Exists(profile) ? profile : null;
     }
 
-    private static Color? ReadActiveWorkspaceColor(string prefsPath, string sessionsPath)
+    private static Color? ReadActiveWorkspaceColor(string prefs, string sessionsPath)
     {
-        // Zen keeps prefs.js open for writing; share access so reading never blocks it
-        string prefs;
-        using (var stream = new FileStream(prefsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
-        using (var reader = new StreamReader(stream))
-            prefs = reader.ReadToEnd();
-
         var activeMatch = ActiveWorkspaceRegex.Match(prefs);
         if (!activeMatch.Success)
             return null;

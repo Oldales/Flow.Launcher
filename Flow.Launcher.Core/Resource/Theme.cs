@@ -34,6 +34,16 @@ namespace Flow.Launcher.Core.Resource
 
         private const int ShadowExtraMargin = 32;
 
+        private const string LightPaletteKey = "LightPalette";
+        private const string DarkPaletteKey = "DarkPalette";
+
+        /// <summary>
+        /// Application resource that, when set to "Light" or "Dark", decides light/dark mode for themes with SystemBG Auto.
+        /// </summary>
+        public const string ColorSchemeOverrideKey = "ColorSchemeOverride";
+
+        private readonly List<object> _appliedPaletteKeys = new();
+
         private readonly IPublicAPI _api;
         private readonly Settings _settings;
         private readonly List<string> _themeDirectories = new();
@@ -873,8 +883,14 @@ namespace Flow.Launcher.Core.Resource
             }
             else if (systemBG == "Auto")
             {
+                // An app-level override (e.g. following Zen Browser's own light/dark choice) wins over ColorScheme
+                var colorSchemeOverride = Application.Current.Resources[ColorSchemeOverrideKey] as string;
+                if (colorSchemeOverride == "Dark" || colorSchemeOverride == "Light")
+                {
+                    useDarkMode = colorSchemeOverride == "Dark";
+                }
                 // If systemBG is "Auto", decide based on ColorScheme
-                if (colorScheme == "Dark")
+                else if (colorScheme == "Dark")
                 {
                     useDarkMode = true;
                 }
@@ -893,6 +909,8 @@ namespace Flow.Launcher.Core.Resource
 
             // Apply DWM Dark Mode
             Win32Helper.DWMSetDarkModeForWindow(mainWindow, useDarkMode);
+
+            ApplyPalette(dict, useDarkMode);
 
             Color LightBG;
             Color DarkBG;
@@ -938,6 +956,29 @@ namespace Flow.Launcher.Core.Resource
                 {
                     mainWindow.Background = ThemeHelper.GetFrozenSolidColorBrush(selectedBG);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Themes can define "LightPalette" and "DarkPalette" dictionaries. The one matching the current mode is copied
+        /// into the application resources, so the theme's DynamicResource references follow light/dark switches.
+        /// </summary>
+        private void ApplyPalette(ResourceDictionary themeDictionary, bool useDarkMode)
+        {
+            var resources = Application.Current.Resources;
+            foreach (var key in _appliedPaletteKeys)
+            {
+                resources.Remove(key);
+            }
+            _appliedPaletteKeys.Clear();
+
+            if (themeDictionary[useDarkMode ? DarkPaletteKey : LightPaletteKey] is not ResourceDictionary palette)
+                return;
+
+            foreach (var key in palette.Keys)
+            {
+                resources[key] = palette[key];
+                _appliedPaletteKeys.Add(key);
             }
         }
 
