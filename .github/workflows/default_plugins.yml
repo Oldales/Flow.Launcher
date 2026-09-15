@@ -10,9 +10,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
@@ -47,14 +47,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.BrowserBookmark"
 
       - name: Publish BrowserBookmark
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.BrowserBookmark"
           files: "Flow.Launcher.Plugin.BrowserBookmark.zip"
           tag_name: "v${{steps.updated-version-browserbookmark.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get Calculator Version
@@ -71,14 +70,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.Calculator"
 
       - name: Publish Calculator
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.Calculator"
           files: "Flow.Launcher.Plugin.Calculator.zip"
           tag_name: "v${{steps.updated-version-calculator.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get Explorer Version
@@ -95,14 +93,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.Explorer"
 
       - name: Publish Explorer
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.Explorer"
           files: "Flow.Launcher.Plugin.Explorer.zip"
           tag_name: "v${{steps.updated-version-explorer.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get PluginIndicator Version
@@ -119,14 +116,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.PluginIndicator"
 
       - name: Publish PluginIndicator
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.PluginIndicator"
           files: "Flow.Launcher.Plugin.PluginIndicator.zip"
           tag_name: "v${{steps.updated-version-pluginindicator.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get PluginsManager Version
@@ -143,14 +139,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.PluginsManager"
 
       - name: Publish PluginsManager
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.PluginsManager"
           files: "Flow.Launcher.Plugin.PluginsManager.zip"
           tag_name: "v${{steps.updated-version-pluginsmanager.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get ProcessKiller Version
@@ -167,14 +162,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.ProcessKiller"
 
       - name: Publish ProcessKiller
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.ProcessKiller"
           files: "Flow.Launcher.Plugin.ProcessKiller.zip"
           tag_name: "v${{steps.updated-version-processkiller.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get Program Version
@@ -191,14 +185,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.Program"
 
       - name: Publish Program
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.Program"
           files: "Flow.Launcher.Plugin.Program.zip"
           tag_name: "v${{steps.updated-version-program.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get Shell Version
@@ -215,14 +208,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.Shell"
 
       - name: Publish Shell
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.Shell"
           files: "Flow.Launcher.Plugin.Shell.zip"
           tag_name: "v${{steps.updated-version-shell.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get Sys Version
@@ -239,14 +231,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.Sys"
 
       - name: Publish Sys
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.Sys"
           files: "Flow.Launcher.Plugin.Sys.zip"
           tag_name: "v${{steps.updated-version-sys.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get Url Version
@@ -263,14 +254,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.Url"
 
       - name: Publish Url
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.Url"
           files: "Flow.Launcher.Plugin.Url.zip"
           tag_name: "v${{steps.updated-version-url.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get WebSearch Version
@@ -287,14 +277,13 @@ jobs:
           rm -r "Flow.Launcher.Plugin.WebSearch"
 
       - name: Publish WebSearch
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.WebSearch"
           files: "Flow.Launcher.Plugin.WebSearch.zip"
           tag_name: "v${{steps.updated-version-websearch.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
 
 
       - name: Get WindowsSettings Version
@@ -311,11 +300,11 @@ jobs:
           rm -r "Flow.Launcher.Plugin.WindowsSettings"
 
       - name: Publish WindowsSettings
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           repository: "Flow-Launcher/Flow.Launcher.Plugin.WindowsSettings"
           files: "Flow.Launcher.Plugin.WindowsSettings.zip"
           tag_name: "v${{steps.updated-version-windowssettings.outputs.prop}}"
           body: Visit Flow's [release notes](https://github.com/Flow-Launcher/Flow.Launcher/releases) for changes.
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_PLUGINS }}
+          token: ${{ secrets.PUBLISH_PLUGINS }}
+

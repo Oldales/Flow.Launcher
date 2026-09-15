@@ -292,7 +292,9 @@ namespace Flow.Launcher
         public void AddActionKeyword(string pluginId, string newActionKeyword) =>
             PluginManager.AddActionKeyword(pluginId, newActionKeyword);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public bool ActionKeywordAssigned(string actionKeyword) => PluginManager.ActionKeywordRegistered(actionKeyword);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public void RemoveActionKeyword(string pluginId, string oldActionKeyword) =>
             PluginManager.RemoveActionKeyword(pluginId, oldActionKeyword);
@@ -454,17 +456,20 @@ namespace Flow.Launcher
                 {
                     if (browserInfo.OpenInTab)
                     {
-                        uri.AbsoluteUri.OpenInBrowserTab(path, inPrivate ?? browserInfo.EnablePrivate, browserInfo.PrivateArg);
+                        uri.AbsoluteUri.OpenInBrowserTab(path, inPrivate ?? browserInfo.EnablePrivate, browserInfo.PrivateArg, browserInfo.ExtraArgs);
                     }
                     else
                     {
-                        uri.AbsoluteUri.OpenInBrowserWindow(path, inPrivate ?? browserInfo.EnablePrivate, browserInfo.PrivateArg);
+                        uri.AbsoluteUri.OpenInBrowserWindow(path, inPrivate ?? browserInfo.EnablePrivate, browserInfo.PrivateArg, browserInfo.ExtraArgs);
                     }
                 }
                 catch (Exception e)
                 {
                     var tabOrWindow = browserInfo.OpenInTab ? "tab" : "window";
-                    LogException(ClassName, $"Failed to open URL in browser {tabOrWindow}: {path}, {inPrivate ?? browserInfo.EnablePrivate}, {browserInfo.PrivateArg}", e);
+                    var includesExtraArgs = string.IsNullOrWhiteSpace(browserInfo.ExtraArgs) 
+                        ? "" 
+                        : ", [including omitted Extra Args]";
+                    LogException(ClassName, $"Failed to open URL in browser {tabOrWindow}: {path}, {inPrivate ?? browserInfo.EnablePrivate}, {browserInfo.PrivateArg}{includesExtraArgs}", e);
                     ShowMsgError(
                         Localize.errorTitle(),
                         Localize.browserOpenError()
@@ -647,6 +652,12 @@ namespace Flow.Launcher
         public string GetDataDirectory() => DataLocation.DataDirectory();
 
         public string GetLogDirectory() => DataLocation.VersionLogDirectory;
+
+        public event EventHandler StringMatcherBehaviorChanged
+        {
+            add => _settings.StringMatcherBehaviorChanged += value;
+            remove => _settings.StringMatcherBehaviorChanged -= value;
+        }
 
         #endregion
 
