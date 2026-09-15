@@ -184,8 +184,9 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <!-- Close only a Flow Launcher running from this build's output folder, so an installed or Release copy keeps running -->
     <Exec
-      Command="cmd /c &quot;taskkill /f /fi &quot;&quot;IMAGENAME eq Flow.Launcher.exe&quot;&quot; &gt;nul 2&gt;&amp;1 &amp; exit /b 0&quot;"
+      Command="powershell -NoProfile -NonInteractive -Command &quot;Get-Process Flow.Launcher -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith('$(TargetDir)', [System.StringComparison]::OrdinalIgnoreCase) } | Stop-Process -Force -ErrorAction SilentlyContinue; exit 0&quot;"
       IgnoreExitCode="true"
       IgnoreStandardErrorWarningFormat="true" />
   </Target>
