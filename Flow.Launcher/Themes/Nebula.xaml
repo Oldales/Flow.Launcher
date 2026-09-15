@@ -41,6 +41,10 @@
     <system:Boolean x:Key="ResultAppearAnimation">True</system:Boolean>
     <system:Boolean x:Key="WindowOpenAnimation">True</system:Boolean>
 
+    <!--  Follow the active Zen Browser workspace color (glow, pill, flash, selection, progress line); the colors here are the fallback  -->
+    <system:Boolean x:Key="ZenAccentSync">True</system:Boolean>
+    <SolidColorBrush x:Key="AccentBrush" Color="#7DB588" />
+
     <!--  Action keyword indicator: accent pill behind the plugin icon and a flash when it activates  -->
     <SolidColorBrush x:Key="PluginActivationPillBrush" Color="#9993C19C" />
     <system:Double x:Key="PluginActivationPillWidth">40</system:Double>
@@ -85,7 +89,7 @@
         <Setter Property="Padding" Value="0 0 50 0" />
         <Setter Property="Foreground" Value="#F2F2F2" />
         <Setter Property="CaretBrush" Value="#F2F2F2" />
-        <Setter Property="SelectionBrush" Value="#7DB588" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="Height" Value="40" />
     </Style>
@@ -105,7 +109,7 @@
         x:Key="PendingLineStyle"
         BasedOn="{StaticResource BasePendingLineStyle}"
         TargetType="{x:Type Line}">
-        <Setter Property="Stroke" Value="#7DB588" />
+        <Setter Property="Stroke" Value="{DynamicResource AccentBrush}" />
     </Style>
 
     <Style

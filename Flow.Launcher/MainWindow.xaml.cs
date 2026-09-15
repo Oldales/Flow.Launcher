@@ -17,6 +17,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Flow.Launcher.Core.Plugin;
 using Flow.Launcher.Core.Resource;
+using Flow.Launcher.Helper;
 using Flow.Launcher.Infrastructure;
 using Flow.Launcher.Infrastructure.Hotkey;
 using Flow.Launcher.Infrastructure.DialogJump;
@@ -283,6 +284,9 @@ namespace Flow.Launcher
 
                                     // Focus query box
                                     QueryTextBox.Focus();
+
+                                    // Follow the active Zen Browser workspace color if the theme asks for it
+                                    ZenAccentSync.Refresh();
 
                                     // Play window animation
                                     if (_settings.UseAnimation && !_viewModel.IsDialogJumpWindowUnderDialog())
