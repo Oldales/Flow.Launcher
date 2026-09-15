@@ -5,6 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using Flow.Launcher.Infrastructure;
+using Flow.Launcher.Infrastructure.UserSettings;
 using Flow.Launcher.Plugin;
 using Flow.Launcher.Plugin.SharedModels;
 
@@ -62,7 +63,7 @@ namespace Flow.Launcher.Test
             };
 
             var results = new List<Result>();
-            var matcher = new StringMatcher(alphabet);
+            var matcher = new StringMatcher(alphabet, new Settings());
             foreach (var str in sources)
             {
                 results.Add(new Result
@@ -84,7 +85,7 @@ namespace Flow.Launcher.Test
         public void WhenNotAllCharactersFoundInSearchString_ThenShouldReturnZeroScore(string searchString)
         {
             var compareString = "Can have rum only in my glass";
-            var matcher = new StringMatcher(alphabet);
+            var matcher = new StringMatcher(alphabet, new Settings());
             var scoreResult = matcher.FuzzyMatch(searchString, compareString).RawScore;
 
             ClassicAssert.True(scoreResult == 0);
@@ -100,7 +101,7 @@ namespace Flow.Launcher.Test
             string searchTerm)
         {
             var results = new List<Result>();
-            var matcher = new StringMatcher(alphabet);
+            var matcher = new StringMatcher(alphabet, new Settings());
             foreach (var str in GetSearchStrings())
             {
                 results.Add(new Result
@@ -150,7 +151,7 @@ namespace Flow.Launcher.Test
             string queryString, string compareString, int expectedScore)
         {
             // When, Given
-            var matcher = new StringMatcher(alphabet) {UserSettingSearchPrecision = SearchPrecisionScore.Regular};
+            var matcher = new StringMatcher(alphabet, new Settings()) { UserSettingSearchPrecision = SearchPrecisionScore.Regular };
             var rawScore = matcher.FuzzyMatch(queryString, compareString).RawScore;
 
             // Should
@@ -184,7 +185,7 @@ namespace Flow.Launcher.Test
             bool expectedPrecisionResult)
         {
             // When            
-            var matcher = new StringMatcher(alphabet) {UserSettingSearchPrecision = expectedPrecisionScore};
+            var matcher = new StringMatcher(alphabet, new Settings()) { UserSettingSearchPrecision = expectedPrecisionScore };
 
             // Given
             var matchResult = matcher.FuzzyMatch(queryString, compareString);
@@ -193,7 +194,7 @@ namespace Flow.Launcher.Test
             Debug.WriteLine("###############################################");
             Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
             Debug.WriteLine(
-                $"RAW SCORE: {matchResult.RawScore}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int) expectedPrecisionScore})");
+                $"RAW SCORE: {matchResult.RawScore}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
             Debug.WriteLine("###############################################");
             Debug.WriteLine("");
 
@@ -235,7 +236,7 @@ namespace Flow.Launcher.Test
             bool expectedPrecisionResult)
         {
             // When
-            var matcher = new StringMatcher(alphabet) {UserSettingSearchPrecision = expectedPrecisionScore};
+            var matcher = new StringMatcher(alphabet, new Settings()) { UserSettingSearchPrecision = expectedPrecisionScore };
 
             // Given
             var matchResult = matcher.FuzzyMatch(queryString, compareString);
@@ -244,7 +245,7 @@ namespace Flow.Launcher.Test
             Debug.WriteLine("###############################################");
             Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
             Debug.WriteLine(
-                $"RAW SCORE: {matchResult.RawScore}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int) expectedPrecisionScore})");
+                $"RAW SCORE: {matchResult.RawScore}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
             Debug.WriteLine("###############################################");
             Debug.WriteLine("");
 
@@ -263,7 +264,7 @@ namespace Flow.Launcher.Test
             string queryString, string compareString1, string compareString2)
         {
             // When
-            var matcher = new StringMatcher(alphabet) {UserSettingSearchPrecision = SearchPrecisionScore.Regular};
+            var matcher = new StringMatcher(alphabet, new Settings()) { UserSettingSearchPrecision = SearchPrecisionScore.Regular };
 
             // Given
             var compareString1Result = matcher.FuzzyMatch(queryString, compareString1);
@@ -296,7 +297,7 @@ namespace Flow.Launcher.Test
             string queryString, string compareString1, string compareString2)
         {
             // When
-            var matcher = new StringMatcher(alphabet) { UserSettingSearchPrecision = SearchPrecisionScore.Regular };
+            var matcher = new StringMatcher(alphabet, new Settings()) { UserSettingSearchPrecision = SearchPrecisionScore.Regular };
 
             // Given
             var compareString1Result = matcher.FuzzyMatch(queryString, compareString1);
@@ -326,7 +327,7 @@ namespace Flow.Launcher.Test
             string secondName, string secondDescription, string secondExecutableName)
         {
             // Act
-            var matcher = new StringMatcher(alphabet);
+            var matcher = new StringMatcher(alphabet, new Settings());
             var firstNameMatch = matcher.FuzzyMatch(queryString, firstName).RawScore;
             var firstDescriptionMatch = matcher.FuzzyMatch(queryString, firstDescription).RawScore;
             var firstExecutableNameMatch = matcher.FuzzyMatch(queryString, firstExecutableName).RawScore;
@@ -335,8 +336,8 @@ namespace Flow.Launcher.Test
             var secondDescriptionMatch = matcher.FuzzyMatch(queryString, secondDescription).RawScore;
             var secondExecutableNameMatch = matcher.FuzzyMatch(queryString, secondExecutableName).RawScore;
 
-            var firstScore = new[] {firstNameMatch, firstDescriptionMatch, firstExecutableNameMatch}.Max();
-            var secondScore = new[] {secondNameMatch, secondDescriptionMatch, secondExecutableNameMatch}.Max();
+            var firstScore = new[] { firstNameMatch, firstDescriptionMatch, firstExecutableNameMatch }.Max();
+            var secondScore = new[] { secondNameMatch, secondDescriptionMatch, secondExecutableNameMatch }.Max();
 
             // Assert
             ClassicAssert.IsTrue(firstScore > secondScore,
@@ -358,16 +359,51 @@ namespace Flow.Launcher.Test
         [TestCase("vsp", "Visual Studio", 0)]
         [TestCase("vps", "Visual Studio", 0)]
         [TestCase(Chrome, HelpCureHopeRaiseOnMindEntityChrome, 75)]
+        // --- Digit run acronym matching ---
+        // A run of consecutive digits (e.g. "2019") counts as a single acronym unit.
+        // Matching any digit within the run "claims" it, but extra digits from the
+        // same run don't increase the group count.
+        // "Visual Studio 2019" has 3 acronym units: V, S, 2019-run.
+
+        // All words + digit run matched: V S 2019 = 3/3
+        [TestCase("vs2",   "Visual Studio 2019", 100)]
+        [TestCase("vs19",  "Visual Studio 2019", 100)]
+        [TestCase("vs2019","Visual Studio 2019", 100)]
+        // Partial: only V + digit run (missing S) = 2/3 = 66
+        [TestCase("v29",   "Visual Studio 2019", 66)]
+        [TestCase("v2019", "Visual Studio 2019", 66)]
+        [TestCase("v19",   "Visual Studio 2019", 66)]
+        // Digit run does not match comparison string — no acronym match
+        [TestCase("vs19",  "Visual Studio 2018", 0)]
+        // Shorter digit run treated identically: V S 19-run = 3/3
+        [TestCase("vs19",  "Visual Studio 19", 100)]
+        [TestCase("vs2019", "VisualStudio2019", 100)]
+        [TestCase("vs2019", "visualStudio2019", 100)]
         public void WhenGivenAnAcronymQuery_ShouldReturnAcronymScore(string queryString, string compareString,
             int desiredScore)
         {
-            var matcher = new StringMatcher(alphabet);
+            var matcher = new StringMatcher(alphabet, new Settings());
             var score = matcher.FuzzyMatch(queryString, compareString).Score;
             ClassicAssert.IsTrue(score == desiredScore,
                 $@"Query: ""{queryString}""
                    CompareString: ""{compareString}""
                    Score: {score}
                    Desired Score: {desiredScore}");
+        }
+
+        [TestCase(true, "camera", "câmera", true)]
+        [TestCase(false, "camera", "câmera", false)]
+        public void WhenGivenIgnoreAccentsSetting_ShouldControlAccentInsensitiveMatching(
+            bool ignoreAccents, string queryString, string compareString, bool shouldMatch)
+        {
+            var settings = new Settings { IgnoreAccents = ignoreAccents };
+            var matcher = new StringMatcher(alphabet, settings)
+            {
+                UserSettingSearchPrecision = SearchPrecisionScore.Regular
+            };
+
+            var result = matcher.FuzzyMatch(queryString, compareString);
+            ClassicAssert.AreEqual(shouldMatch, result.IsSearchPrecisionScoreMet());
         }
     }
 }

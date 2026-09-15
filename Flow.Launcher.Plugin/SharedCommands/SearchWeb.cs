@@ -17,8 +17,16 @@ namespace Flow.Launcher.Plugin.SharedCommands
             var name = string.Empty;
             try
             {
-                using var regDefault = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice", false);
-                var stringDefault = regDefault.GetValue("ProgId");
+                // Updating your default browser in Windows updates the following registry
+                using var regDefaultLatest = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoiceLatest\\ProgId", false);
+                var stringDefault = regDefaultLatest?.GetValue("ProgId");
+
+                if (stringDefault is null)
+                {
+                    // If the above registry key is not found, we will fallback to the older registry key which is used in Windows 10 and earlier versions of Windows 11
+                    using var regDefault = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice", false);
+                    stringDefault = regDefault.GetValue("ProgId");
+                }
 
                 using var regKey = Registry.ClassesRoot.OpenSubKey(stringDefault + "\\shell\\open\\command", false);
                 name = regKey.GetValue(null).ToString().ToLower().Replace("\"", "");
@@ -38,7 +46,7 @@ namespace Flow.Launcher.Plugin.SharedCommands
         /// Opens search in a new browser. If no browser path is passed in then Chrome is used. 
         /// Leave browser path blank to use Chrome.
         /// </summary>
-        public static void OpenInBrowserWindow(this string url, string browserPath = "", bool inPrivate = false, string privateArg = "")
+        public static void OpenInBrowserWindow(this string url, string browserPath = "", bool inPrivate = false, string privateArg = "", string extraArgs = "")
         {
             browserPath = string.IsNullOrEmpty(browserPath) ? GetDefaultBrowserPath() : browserPath;
 
@@ -52,12 +60,15 @@ namespace Flow.Launcher.Plugin.SharedCommands
             var browser = string.IsNullOrEmpty(browserExecutableName) ? "chrome" : browserPath;
 
             // Internet Explorer will open url in new browser window, and does not take the --new-window parameter
-            var browserArguements = (browserExecutableName == "iexplore.exe" ? "" : "--new-window ") + (inPrivate ? $"{privateArg} " : "") + url;
+            var browserArguments = (browserExecutableName == "iexplore.exe" ? "" : "--new-window ")
+                                   + (inPrivate ? $"{privateArg} " : "")
+                                   + (string.IsNullOrWhiteSpace(extraArgs) ? "" : $"{extraArgs} ")
+                                   + url;
 
             var psi = new ProcessStartInfo
             {
                 FileName = browser,
-                Arguments = browserArguements,
+                Arguments = browserArguments,
                 UseShellExecute = true
             };
 
@@ -86,7 +97,7 @@ namespace Flow.Launcher.Plugin.SharedCommands
         /// <summary> 
         /// Opens search as a tab in the default browser chosen in Windows settings.
         /// </summary>
-        public static void OpenInBrowserTab(this string url, string browserPath = "", bool inPrivate = false, string privateArg = "")
+        public static void OpenInBrowserTab(this string url, string browserPath = "", bool inPrivate = false, string privateArg = "", string extraArgs = "")
         {
             browserPath = string.IsNullOrEmpty(browserPath) ? GetDefaultBrowserPath() : browserPath;
 
@@ -99,7 +110,9 @@ namespace Flow.Launcher.Plugin.SharedCommands
                 if (!string.IsNullOrEmpty(browserPath))
                 {
                     psi.FileName = browserPath;
-                    psi.Arguments = (inPrivate ? $"{privateArg} " : "") + url;
+                    psi.Arguments = (inPrivate ? $"{privateArg} " : "")
+                                    + (string.IsNullOrWhiteSpace(extraArgs) ? "" : $"{extraArgs} ")
+                                    + url;
                 }
                 else
                 {

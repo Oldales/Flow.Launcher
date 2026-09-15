@@ -24,6 +24,7 @@ namespace Flow.Launcher.Infrastructure
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location.NonNull()).ProductVersion;
         public static readonly string Dev = "Dev";
         public const string Documentation = "https://flowlauncher.com/docs/#/usage-tips";
+        public const string CrowdinProjectUrl = "https://crowdin.com/project/flow-launcher";
 
         public static readonly int ThumbnailSize = 64;
         private static readonly string ImagesDirectory = Path.Combine(ProgramDirectory, "Images");
@@ -31,9 +32,10 @@ namespace Flow.Launcher.Infrastructure
         public static readonly string ErrorIcon = Path.Combine(ImagesDirectory, "app_error.png");
         public static readonly string MissingImgIcon = Path.Combine(ImagesDirectory, "app_missing_img.png");
         public static readonly string LoadingImgIcon = Path.Combine(ImagesDirectory, "loading.png");
-        public static readonly string ImageIcon = Path.Combine(ImagesDirectory, "image.png");
         public static readonly string HistoryIcon = Path.Combine(ImagesDirectory, "history.png");
         public static readonly string SettingsIcon = Path.Combine(ImagesDirectory, "settings.png");
+        public static readonly string FolderIcon = Path.Combine(ImagesDirectory, "folder.png");
+        public static readonly string DeleteIcon = Path.Combine(ImagesDirectory, "delete.png");
 
         public static string PythonPath;
         public static string NodePath;

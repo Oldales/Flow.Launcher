@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Flow.Launcher.Infrastructure;
 using Flow.Launcher.Infrastructure.UserSettings;
 using Flow.Launcher.Plugin.SharedModels;
+using Flow.Launcher.Resources.Controls;
 using Flow.Launcher.SettingPages.Views;
 using Flow.Launcher.ViewModel;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -40,8 +41,6 @@ public partial class SettingWindow
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        RefreshMaximizeRestoreButton();
-
         UpdatePositionAndState();
 
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -93,12 +92,11 @@ public partial class SettingWindow
         textBox.MoveFocus(tRequest);
     }
 
-    private void Window_StateChanged(object sender, EventArgs e)
+    private void OnLastNonMinimizedWindowStateChanged(object sender, CustomWindowTitleBar.WindowStateChangedEventArgs e)
     {
-        RefreshMaximizeRestoreButton();
-        if (IsLoaded && WindowState != WindowState.Minimized)
+        if (IsLoaded)
         {
-            _settings.SettingWindowState = WindowState;
+            _settings.SettingWindowState = e.CurrentState;
         }
     }
 
@@ -108,43 +106,6 @@ public partial class SettingWindow
         {
             _settings.SettingWindowTop = Top;
             _settings.SettingWindowLeft = Left;
-        }
-    }
-
-    #endregion
-
-    #region Window Custom TitleBar
-
-    private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Minimized;
-    }
-
-    private void OnMaximizeRestoreButtonClick(object sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState switch
-        {
-            WindowState.Maximized => WindowState.Normal,
-            _ => WindowState.Maximized
-        };
-    }
-
-    private void OnCloseButtonClick(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
-
-    private void RefreshMaximizeRestoreButton()
-    {
-        if (WindowState == WindowState.Maximized)
-        {
-            MaximizeButton.Visibility = Visibility.Hidden;
-            RestoreButton.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            MaximizeButton.Visibility = Visibility.Visible;
-            RestoreButton.Visibility = Visibility.Hidden;
         }
     }
 

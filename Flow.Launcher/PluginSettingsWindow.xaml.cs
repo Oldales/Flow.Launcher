@@ -58,52 +58,9 @@ public partial class PluginSettingsWindow
         }
     }
 
-    private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Minimized;
-    }
-
-    private void OnMaximizeRestoreButtonClick(object sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState switch
-        {
-            WindowState.Maximized => WindowState.Normal,
-            _ => WindowState.Maximized
-        };
-    }
-
-    private void OnCloseButtonClick(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
-
     private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e)
     {
         Close();
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        RefreshMaximizeRestoreButton();
-    }
-
-    private void Window_StateChanged(object sender, EventArgs e)
-    {
-        RefreshMaximizeRestoreButton();
-    }
-
-    private void RefreshMaximizeRestoreButton()
-    {
-        if (WindowState == WindowState.Maximized)
-        {
-            MaximizeButton.Visibility = Visibility.Hidden;
-            RestoreButton.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            MaximizeButton.Visibility = Visibility.Visible;
-            RestoreButton.Visibility = Visibility.Hidden;
-        }
     }
 
     protected override void OnClosed(EventArgs e)
