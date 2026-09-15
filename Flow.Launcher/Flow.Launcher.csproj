@@ -181,7 +181,10 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="taskkill /f /fi &quot;IMAGENAME eq Flow.Launcher.exe&quot;" />
+    <Exec
+      Command="cmd /c &quot;taskkill /f /fi &quot;&quot;IMAGENAME eq Flow.Launcher.exe&quot;&quot; &gt;nul 2&gt;&amp;1 &amp; exit /b 0&quot;"
+      IgnoreExitCode="true"
+      IgnoreStandardErrorWarningFormat="true" />
   </Target>
   
   <Target Name="RemoveDuplicateAnalyzers" BeforeTargets="CoreCompile">

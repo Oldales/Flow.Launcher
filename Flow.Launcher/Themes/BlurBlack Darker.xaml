@@ -15,6 +15,8 @@
     <system:String x:Key="SystemBG">Dark</system:String>
     <Color x:Key="LightBG">#C7000000</Color>
     <Color x:Key="DarkBG">#C7000000</Color>
+    <CornerRadius x:Key="ItemRadius">10</CornerRadius>
+    <Thickness x:Key="ItemMargin">8 2 8 2</Thickness>
     <Thickness x:Key="ResultMargin">0 0 0 8</Thickness>
 
     <Style x:Key="WindowRadius" TargetType="{x:Type Border}">
@@ -110,6 +112,17 @@
         <Setter Property="Opacity" Value="0.5" />
     </Style>
     <SolidColorBrush x:Key="ItemSelectedBackgroundColor">#19ffffff</SolidColorBrush>
+
+    <Color x:Key="GlowStop1">#12000A0D</Color>
+    <Color x:Key="GlowStop2">#22001E26</Color>
+    <Color x:Key="GlowStop3">#44003C4D</Color>
+    <Color x:Key="GlowStop4">#77006680</Color>
+    <Color x:Key="GlowStop5">#AA0097BF</Color>
+    <Color x:Key="GlowStop6">#FF00C9FF</Color>
+    <Color x:Key="GlowStop7">#A20097BF</Color>
+    <Color x:Key="GlowStop8">#66004E63</Color>
+    <Color x:Key="GlowStop9">#33001E26</Color>
+    <Color x:Key="GlowStop10">#14000A0D</Color>
 
     <!--  button style in the middle of the scrollbar  -->
     <Style
