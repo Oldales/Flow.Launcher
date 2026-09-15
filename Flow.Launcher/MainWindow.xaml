@@ -549,6 +549,7 @@
                         <Border
                             d:DataContext="{d:DesignInstance vm:ResultViewModel}"
                             DataContext="{Binding PreviewSelectedItem, Mode=OneWay}"
+                            Style="{DynamicResource PreviewCardStyle}"
                             Visibility="{Binding ShowDefaultPreview}">
                             <Grid
                                 Margin="0 0 10 5"
@@ -638,6 +639,7 @@
                         </Border>
                         <Border
                             Padding="0 0 10 10"
+                            Style="{DynamicResource PreviewCardStyle}"
                             Visibility="{Binding ShowCustomizedPreview}">
                             <ContentControl Content="{Binding CustomizedPreviewControl}" />
                         </Border>

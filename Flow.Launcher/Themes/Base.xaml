@@ -26,6 +26,8 @@
     <Thickness x:Key="PluginActivationPillMargin">0</Thickness>
     <CornerRadius x:Key="PluginActivationPillRadius">0</CornerRadius>
     <SolidColorBrush x:Key="PluginActivationFlashBrush" Color="Transparent" />
+    <!--  Card around the preview panel's content (see MainWindow.xaml); plain by default  -->
+    <Style x:Key="PreviewCardStyle" TargetType="{x:Type Border}" />
     <Thickness x:Key="ItemMargin">0</Thickness>
     <Thickness x:Key="ResultMargin">0</Thickness>
     <!--  Further font customizations are dynamically loaded in Theme.cs  -->

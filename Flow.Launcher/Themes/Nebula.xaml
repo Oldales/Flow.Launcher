@@ -5,14 +5,18 @@
 -->
 <!--
     Modeled on the Zen Browser "Nebula" mod (floating URL bar):
-    frosted dark glass, 12px rounded rows, 10% white selection, a soft
-    accent glow behind the selected row, Zen-style shortcut chips, an accent
-    pill for the active plugin and a quick fade-in when the launcher opens.
+    frosted glass, 12px rounded rows, a soft accent glow behind the selected
+    row, Zen-style shortcut chips, an accent pill for the active plugin, a
+    quick fade-in when the launcher opens and a glass card for the preview.
+
+    Light and dark: colors come from DarkPalette and LightPalette below; the
+    theme engine swaps them with Windows' light/dark mode (or Zen's, when Zen
+    forces one and ZenColorSchemeSync is on).
 
     Accent: GlowStop6 is the accent at full strength (Zen workspace primary
     color rgb(125 181 136)); GlowStop1-5 are the same color mixed with black,
-    darkest first, with Nebula's 120% contrast applied. Swap these six to
-    re-color the glow.
+    darkest first, with Nebula's 120% contrast applied. With ZenAccentSync on,
+    these follow the active Zen workspace and the values here are the fallback.
 -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,11 +27,66 @@
         <ResourceDictionary Source="pack://application:,,,/Themes/Base.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
-    <!--  Glass: system acrylic with a dark tint on top  -->
+    <!--  Glass: system acrylic with a tint on top, light or dark to match the palette  -->
     <system:Boolean x:Key="ThemeBlurEnabled">True</system:Boolean>
-    <system:String x:Key="SystemBG">Dark</system:String>
-    <Color x:Key="LightBG">#A8050607</Color>
+    <system:String x:Key="SystemBG">Auto</system:String>
+    <Color x:Key="LightBG">#CCF7F7F7</Color>
     <Color x:Key="DarkBG">#A8050607</Color>
+
+    <!--  Follow Zen Browser: active workspace color as the accent, and Zen's light/dark choice when it forces one  -->
+    <system:Boolean x:Key="ZenAccentSync">True</system:Boolean>
+    <system:Boolean x:Key="ZenColorSchemeSync">True</system:Boolean>
+
+    <!--  Palettes  -->
+    <ResourceDictionary x:Key="DarkPalette">
+        <SolidColorBrush x:Key="NebulaQueryText" Color="#F2F2F2" />
+        <SolidColorBrush x:Key="NebulaPlaceholder" Color="#6E6E6E" />
+        <SolidColorBrush x:Key="NebulaSeparator" Color="#1AFFFFFF" />
+        <SolidColorBrush x:Key="NebulaTitle" Color="#B3FFFFFF" />
+        <SolidColorBrush x:Key="NebulaSubTitle" Color="#919191" />
+        <SolidColorBrush x:Key="NebulaTitleSelected" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="NebulaSubTitleSelected" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="NebulaGlyph" Color="#B3FFFFFF" />
+        <SolidColorBrush x:Key="NebulaGlyphSelected" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="NebulaHotkeyText" Color="#8A8A8A" />
+        <SolidColorBrush x:Key="NebulaHotkeyTextSelected" Color="#26382A" />
+        <SolidColorBrush x:Key="NebulaHotkeyBackground" Color="#0DFFFFFF" />
+        <SolidColorBrush x:Key="NebulaHotkeyBorder" Color="#14FFFFFF" />
+        <SolidColorBrush x:Key="NebulaHotkeyBackgroundSelected" Color="#E6FFFFFF" />
+        <SolidColorBrush x:Key="ItemSelectedBackgroundColor" Color="#1AFFFFFF" />
+        <SolidColorBrush x:Key="NebulaThumb" Color="#33FFFFFF" />
+        <SolidColorBrush x:Key="NebulaSearchIcon" Color="#8A8A8A" />
+        <SolidColorBrush x:Key="NebulaClock" Color="#7A7A7A" />
+        <SolidColorBrush x:Key="NebulaPreviewCard" Color="#0AFFFFFF" />
+        <SolidColorBrush x:Key="NebulaPreviewCardBorder" Color="#14FFFFFF" />
+        <SolidColorBrush x:Key="NebulaPreviewTitle" Color="#F2F2F2" />
+        <SolidColorBrush x:Key="NebulaPreviewText" Color="#A6FFFFFF" />
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="LightPalette">
+        <SolidColorBrush x:Key="NebulaQueryText" Color="#1C1C1C" />
+        <SolidColorBrush x:Key="NebulaPlaceholder" Color="#8C8C8C" />
+        <SolidColorBrush x:Key="NebulaSeparator" Color="#14000000" />
+        <SolidColorBrush x:Key="NebulaTitle" Color="#B3000000" />
+        <SolidColorBrush x:Key="NebulaSubTitle" Color="#5A5A5A" />
+        <SolidColorBrush x:Key="NebulaTitleSelected" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="NebulaSubTitleSelected" Color="#E6FFFFFF" />
+        <SolidColorBrush x:Key="NebulaGlyph" Color="#B3000000" />
+        <SolidColorBrush x:Key="NebulaGlyphSelected" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="NebulaHotkeyText" Color="#6B6B6B" />
+        <SolidColorBrush x:Key="NebulaHotkeyTextSelected" Color="#26382A" />
+        <SolidColorBrush x:Key="NebulaHotkeyBackground" Color="#0D000000" />
+        <SolidColorBrush x:Key="NebulaHotkeyBorder" Color="#14000000" />
+        <SolidColorBrush x:Key="NebulaHotkeyBackgroundSelected" Color="#E6FFFFFF" />
+        <SolidColorBrush x:Key="ItemSelectedBackgroundColor" Color="#D9646464" />
+        <SolidColorBrush x:Key="NebulaThumb" Color="#33000000" />
+        <SolidColorBrush x:Key="NebulaSearchIcon" Color="#6E6E6E" />
+        <SolidColorBrush x:Key="NebulaClock" Color="#7A7A7A" />
+        <SolidColorBrush x:Key="NebulaPreviewCard" Color="#0A000000" />
+        <SolidColorBrush x:Key="NebulaPreviewCardBorder" Color="#12000000" />
+        <SolidColorBrush x:Key="NebulaPreviewTitle" Color="#1C1C1C" />
+        <SolidColorBrush x:Key="NebulaPreviewText" Color="#A6000000" />
+    </ResourceDictionary>
 
     <!--  Accent glow  -->
     <Color x:Key="GlowStop1">#33000000</Color>
@@ -38,12 +97,10 @@
     <Color x:Key="GlowStop6">#FF7CC08A</Color>
     <system:Double x:Key="GlowOpacity">0.7</system:Double>
     <system:Double x:Key="GlowBlurRadius">56</system:Double>
+    <SolidColorBrush x:Key="AccentBrush" Color="#7DB588" />
+
     <system:Boolean x:Key="ResultAppearAnimation">True</system:Boolean>
     <system:Boolean x:Key="WindowOpenAnimation">True</system:Boolean>
-
-    <!--  Follow the active Zen Browser workspace color (glow, pill, flash, selection, progress line); the colors here are the fallback  -->
-    <system:Boolean x:Key="ZenAccentSync">True</system:Boolean>
-    <SolidColorBrush x:Key="AccentBrush" Color="#7DB588" />
 
     <!--  Action keyword indicator: accent pill behind the plugin icon and a flash when it activates  -->
     <SolidColorBrush x:Key="PluginActivationPillBrush" Color="#9993C19C" />
@@ -60,7 +117,6 @@
     <CornerRadius x:Key="ItemRadius">12</CornerRadius>
     <Thickness x:Key="ItemMargin">10 2 10 2</Thickness>
     <Thickness x:Key="ResultMargin">0 0 0 10</Thickness>
-    <SolidColorBrush x:Key="ItemSelectedBackgroundColor">#1AFFFFFF</SolidColorBrush>
 
     <Style
         x:Key="WindowBorderStyle"
@@ -87,8 +143,8 @@
         BasedOn="{StaticResource BaseQueryBoxStyle}"
         TargetType="{x:Type TextBox}">
         <Setter Property="Padding" Value="0 0 50 0" />
-        <Setter Property="Foreground" Value="#F2F2F2" />
-        <Setter Property="CaretBrush" Value="#F2F2F2" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaQueryText}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource NebulaQueryText}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="Height" Value="40" />
@@ -102,7 +158,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Height" Value="40" />
         <Setter Property="FontSize" Value="20" />
-        <Setter Property="Foreground" Value="#6E6E6E" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaPlaceholder}" />
     </Style>
 
     <Style
@@ -116,7 +172,7 @@
         x:Key="SeparatorStyle"
         BasedOn="{StaticResource BaseSeparatorStyle}"
         TargetType="{x:Type Rectangle}">
-        <Setter Property="Fill" Value="#1AFFFFFF" />
+        <Setter Property="Fill" Value="{DynamicResource NebulaSeparator}" />
         <Setter Property="Height" Value="1" />
         <Setter Property="Margin" Value="12 0 12 8" />
     </Style>
@@ -126,28 +182,28 @@
         x:Key="ItemTitleStyle"
         BasedOn="{StaticResource BaseItemTitleStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#B3FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaTitle}" />
     </Style>
 
     <Style
         x:Key="ItemSubTitleStyle"
         BasedOn="{StaticResource BaseItemSubTitleStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#919191" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaSubTitle}" />
     </Style>
 
     <Style
         x:Key="ItemTitleSelectedStyle"
         BasedOn="{StaticResource BaseItemTitleSelectedStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaTitleSelected}" />
     </Style>
 
     <Style
         x:Key="ItemSubTitleSelectedStyle"
         BasedOn="{StaticResource BaseItemSubTitleSelectedStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaSubTitleSelected}" />
     </Style>
 
     <Style x:Key="HighlightStyle" />
@@ -156,11 +212,11 @@
         x:Key="ItemGlyph"
         BasedOn="{StaticResource BaseGlyphStyle}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#B3FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaGlyph}" />
     </Style>
 
     <Style x:Key="ItemGlyphSelectedStyle" TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaGlyphSelected}" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Width" Value="25" />
@@ -170,20 +226,20 @@
 
     <Style x:Key="ItemHotkeyStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="Foreground" Value="#8A8A8A" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaHotkeyText}" />
     </Style>
 
     <Style x:Key="ItemHotkeySelectedStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="Foreground" Value="#26382A" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaHotkeyTextSelected}" />
     </Style>
 
     <Style
         x:Key="ItemHotkeyBGStyle"
         BasedOn="{StaticResource BaseItemHotkeyBGStyle}"
         TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#0DFFFFFF" />
-        <Setter Property="BorderBrush" Value="#14FFFFFF" />
+        <Setter Property="Background" Value="{DynamicResource NebulaHotkeyBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource NebulaHotkeyBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
@@ -192,8 +248,8 @@
         x:Key="ItemHotkeyBGSelectedStyle"
         BasedOn="{StaticResource BaseItemHotkeyBGSelectedStyle}"
         TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="#E6FFFFFF" />
-        <Setter Property="BorderBrush" Value="#E6FFFFFF" />
+        <Setter Property="Background" Value="{DynamicResource NebulaHotkeyBackgroundSelected}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource NebulaHotkeyBackgroundSelected}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
@@ -207,7 +263,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
                     <Border
-                        Background="#33FFFFFF"
+                        Background="{DynamicResource NebulaThumb}"
                         BorderBrush="Transparent"
                         BorderThickness="0"
                         CornerRadius="2"
@@ -255,7 +311,7 @@
         x:Key="SearchIconStyle"
         BasedOn="{StaticResource BaseSearchIconStyle}"
         TargetType="{x:Type Path}">
-        <Setter Property="Fill" Value="#8A8A8A" />
+        <Setter Property="Fill" Value="{DynamicResource NebulaSearchIcon}" />
         <Setter Property="Width" Value="24" />
         <Setter Property="Height" Value="24" />
     </Style>
@@ -286,43 +342,62 @@
         x:Key="ClockBox"
         BasedOn="{StaticResource BaseClockBox}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#7A7A7A" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaClock}" />
     </Style>
 
     <Style
         x:Key="DateBox"
         BasedOn="{StaticResource BaseDateBox}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#7A7A7A" />
+        <Setter Property="Foreground" Value="{DynamicResource NebulaClock}" />
     </Style>
 
-    <!--  Preview panel  -->
+    <!--  Preview panel (F1): a glass card beside the results, with the icon in the accent color  -->
     <Style
         x:Key="PreviewBorderStyle"
         BasedOn="{StaticResource BasePreviewBorderStyle}"
         TargetType="{x:Type Border}">
-        <Setter Property="Margin" Value="0 0 10 8" />
-        <Setter Property="BorderBrush" Value="#1AFFFFFF" />
+        <Setter Property="Margin" Value="0 0 6 10" />
+        <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
 
-    <Style
-        x:Key="PreviewItemTitleStyle"
-        BasedOn="{StaticResource BasePreviewItemTitleStyle}"
-        TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#E6E6E6" />
-    </Style>
-
-    <Style
-        x:Key="PreviewItemSubTitleStyle"
-        BasedOn="{StaticResource BasePreviewItemSubTitleStyle}"
-        TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#919191" />
+    <Style x:Key="PreviewCardStyle" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{DynamicResource NebulaPreviewCard}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource NebulaPreviewCardBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Margin" Value="0 2 10 10" />
+        <Setter Property="Padding" Value="8 4 0 4" />
     </Style>
 
     <Style
         x:Key="PreviewGlyph"
         BasedOn="{StaticResource BasePreviewGlyph}"
         TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="#BDBDBD" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="FontSize" Value="72" />
+    </Style>
+
+    <Style
+        x:Key="PreviewItemTitleStyle"
+        BasedOn="{StaticResource BasePreviewItemTitleStyle}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource NebulaPreviewTitle}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="PreviewSep" TargetType="{x:Type Separator}">
+        <Setter Property="Background" Value="{DynamicResource NebulaSeparator}" />
+        <Setter Property="Margin" Value="4 12 12 6" />
+    </Style>
+
+    <Style
+        x:Key="PreviewItemSubTitleStyle"
+        BasedOn="{StaticResource BasePreviewItemSubTitleStyle}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource NebulaPreviewText}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="LineHeight" Value="19" />
     </Style>
 </ResourceDictionary>

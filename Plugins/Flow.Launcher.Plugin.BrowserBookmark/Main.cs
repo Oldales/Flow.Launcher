@@ -72,7 +72,16 @@ public class Main : ISettingProvider, IPlugin, IReloadable, IPluginI18n, IContex
         // Validate the cache directory before loading all bookmarks because Flow needs this directory to storage favicons
         FilesFolders.ValidateDirectory(_faviconCacheDir);
 
-        _cachedBookmarks = BookmarkLoader.LoadAllBookmarks(_settings);
+        var bookmarks = BookmarkLoader.LoadAllBookmarks(_settings);
+
+        // Check favicon files once here instead of for every bookmark on every query
+        foreach (var bookmark in bookmarks)
+        {
+            if (!string.IsNullOrEmpty(bookmark.FaviconPath) && !File.Exists(bookmark.FaviconPath))
+                bookmark.FaviconPath = null;
+        }
+
+        _cachedBookmarks = bookmarks;
         _ = MonitorRefreshQueueAsync();
         _initialized = true;
     }
@@ -90,17 +99,25 @@ public class Main : ISettingProvider, IPlugin, IReloadable, IPluginI18n, IContex
         // Should top results be returned? (true if no search parameters have been passed)
         var topResults = string.IsNullOrEmpty(param);
 
+        // Reloads replace the list rather than changing it, so a local reference is safe to enumerate
+        var bookmarks = _cachedBookmarks;
+
         if (!topResults)
         {
             // Since we mixed chrome and firefox bookmarks, we should order them again
-            return _cachedBookmarks
-                .Select(c => BookmarkToResult(bookmark: c, score: BookmarkLoader.MatchProgram(c, param).Score))
-                .Where(r => r.Score > 0)
-                .ToList();
+            // Score first and only build results for matches
+            var results = new List<Result>();
+            foreach (var bookmark in bookmarks)
+            {
+                var score = BookmarkLoader.MatchProgram(bookmark, param).Score;
+                if (score > 0)
+                    results.Add(BookmarkToResult(bookmark, score));
+            }
+            return results;
         }
         else
         {
-            return _cachedBookmarks
+            return bookmarks
                 .Select(c => BookmarkToResult(bookmark: c, score: 5))
                 .ToList();
         }
@@ -112,9 +129,7 @@ public class Main : ISettingProvider, IPlugin, IReloadable, IPluginI18n, IContex
         {
             Title = bookmark.Name,
             SubTitle = bookmark.Url,
-            IcoPath = !string.IsNullOrEmpty(bookmark.FaviconPath) && File.Exists(bookmark.FaviconPath)
-                ? bookmark.FaviconPath
-                : @"Images\bookmark.png",
+            IcoPath = bookmark.FaviconPath ?? @"Images\bookmark.png",
             Score = score,
             Action = _ =>
             {
@@ -136,6 +151,8 @@ public class Main : ISettingProvider, IPlugin, IReloadable, IPluginI18n, IContex
 
     private static readonly Channel<byte> _refreshQueue = Channel.CreateBounded<byte>(1);
 
+    private static readonly TimeSpan ReloadSettleDelay = TimeSpan.FromSeconds(5);
+
     private static readonly SemaphoreSlim _fileMonitorSemaphore = new(1, 1);
 
     private static async Task MonitorRefreshQueueAsync()
@@ -150,6 +167,13 @@ public class Main : ISettingProvider, IPlugin, IReloadable, IPluginI18n, IContex
         {
             if (reader.TryRead(out _))
             {
+                // Browsers write their database in bursts, and history changes it often; let the writes settle and
+                // handle them with one reload
+                await Task.Delay(ReloadSettleDelay);
+                while (reader.TryRead(out _))
+                {
+                }
+
                 ReloadAllBookmarks(false);
             }
         }
@@ -200,7 +224,7 @@ public class Main : ISettingProvider, IPlugin, IReloadable, IPluginI18n, IContex
 
     public static void ReloadAllBookmarks(bool disposeFileWatchers = true)
     {
-        _cachedBookmarks.Clear();
+        // Keep the current bookmarks until the new list replaces them, so queries during a reload still get results
         if (disposeFileWatchers)
             DisposeFileWatchers();
         LoadBookmarksIfEnabled();
